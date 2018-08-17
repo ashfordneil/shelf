@@ -12,6 +12,11 @@ impl_web! {
         fn hello_world(&self) -> Result<String, ()> {
             Ok("Hello world".to_string())
         }
+
+        /// @get("/healthz")
+        fn health(&self) -> Result<String, ()> {
+            Ok("ok".to_string())
+        }
     }
 }
 
