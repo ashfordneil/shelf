@@ -2,6 +2,9 @@
   "name": "scaling-engine",
   "version": "0.1.0",
   "license": "MIT",
+  "scripts": {
+    "start": "yarn parcel index.html"
+  },
   "devDependencies": {
     "@types/axios": "^0.14.0",
     "@types/react": "^16.4.11",
