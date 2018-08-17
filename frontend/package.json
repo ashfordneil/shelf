@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
-    "start": "yarn parcel index.html"
+    "start": "yarn parcel index.html",
+    "build": "yarn parcel build index.html"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
