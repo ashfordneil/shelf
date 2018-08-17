@@ -1,0 +1,57 @@
+$handheld: "only screen and (max-width: 719px)";
+$wide-screens: "only screen and (min-width: 720px) and (max-width: 1079px)";
+$wider-screens: "only screen and (min-width: 1080px)";
+
+body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: column;
+    align-items: stretch;
+}
+
+#main {
+    flex: 1;
+    display: flex;
+    flex-flow: column;
+    align-items: stretch;
+}
+
+.spacey {
+    flex: 1;
+}
+
+.board {
+    display: grid;
+    padding: 1em;
+
+    @media #{$handheld} {
+        grid-template-columns: repeat(1, 1fr);
+        grid-gap: 1em;
+    }
+
+    @media #{$wide-screens} {
+        grid-template-columns: repeat(2, 1fr);
+        grid-gap: 1em;
+    }
+
+    @media #{$wider-screens} {
+        grid-template-columns: repeat(3, 1fr);
+        grid-gap: 1em;
+    }
+}
+
+.tile {
+    background-color: lightblue;
+    height: 15em;
+
+    @media #{$handheld} {
+    }
+
+    @media #{$wide-screens} {
+    }
+
+    @media #{$wider-screens} {
+    }
+}
