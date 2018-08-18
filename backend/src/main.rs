@@ -146,4 +146,25 @@ mod test {
         // Ensure that the lock is no longer in place
         assert!(Board::checkout(&board_id).is_some());
     }
+
+    #[test]
+    fn test_correct_jwt() {
+        let board_id1 = Board::post();
+        let jwt1 = Board::checkout(&board_id1).unwrap();
+
+        let board_id2 = Board::post();
+        let jwt2 = Board::checkout(&board_id2).unwrap();
+
+        let tile_id = Tile::post(Tile {
+            content: "heya".to_string()
+        });
+
+        let board = Board {
+            tiles: vec![tile_id]
+        };
+
+        let result = Board::checkin(&board_id1, jwt2, board);
+
+        assert!(result.is_err());
+    }
 }
