@@ -66,10 +66,41 @@ impl_web! {
             }
         }
 
+        #[get("/tile/:id")]
+        #[content_type("json")]
+        fn get_tile(&self, id: String) -> Result<Tile, ()> {
+            let id = Uuid::parse_str(&id).map_err(|e| {
+                println!("{:?}", e);
+            })?;
+            Tile::get(&id).ok_or(())
+        }
+
         #[post("/tile")]
         #[content_type("json")]
         fn post_tile(&self, body: Tile) -> Result<UuidWrapper, ()> {
             Ok(UuidWrapper(Tile::post(body)))
+        }
+
+        #[post("/tile/:id")]
+        fn checkout_tile(&self, id: String) -> Result<String, ()> {
+            let id = Uuid::parse_str(&id).map_err(|e| {
+                println!("{:?}", e);
+            })?;
+            Tile::checkout(&id).ok_or(())
+        }
+
+        #[patch("/tile/:id")]
+        fn checkin_tile(&self, id: String, jwt: String, body: Tile) -> Result<String, ()> {
+            let id = Uuid::parse_str(&id).map_err(|e| {
+                println!("{:?}", e);
+            })?;
+            let resp = Tile::checkin(&id, jwt, body);
+            if let Ok(_) = resp {
+                Ok("ok".to_string().to_string())
+            }
+            else {
+                Err(())
+            }
         }
     }
 }
@@ -105,9 +136,12 @@ mod test {
             tiles: vec![tile_id]
         };
 
-        let result = Board::checkin(&board_id, jwt, board);
+        let result = Board::checkin(&board_id, jwt, board.clone());
 
         assert!(result.is_ok());
+
+        let gotten_board = Board::get(&board_id).unwrap();
+        assert_eq!(board, gotten_board);
     }
 
     #[test]
@@ -150,7 +184,7 @@ mod test {
     #[test]
     fn test_correct_jwt() {
         let board_id1 = Board::post();
-        let jwt1 = Board::checkout(&board_id1).unwrap();
+        let _jwt1 = Board::checkout(&board_id1).unwrap();
 
         let board_id2 = Board::post();
         let jwt2 = Board::checkout(&board_id2).unwrap();
