@@ -6,9 +6,15 @@ import * as tileServices from "../tile/services";
 
 import { create } from "../util";
 import {Formik, Form, Field, FormikErrors} from 'formik';
+import { Tile } from "../tile/models";
+import { delete_ } from "../tile/services";
 
 interface Props {
     id: string;
+}
+
+const handleDelete = (tile: Tile) => (): Promise<void> => {
+    return delete_(tile.id)
 }
 
 export const Board = (props: Props): Observable<React.JSXElement> {
@@ -18,14 +24,17 @@ export const Board = (props: Props): Observable<React.JSXElement> {
         try {
             const board = await boardServices.get(props.id);
             const tiles = board.tiles.map(tile =>
-                <div id={tile.id} className="tile">
+                <div key={tile.id} className="tile">
                     <h2>{tile.title}</h2>
                     <p>{tile.content}</p>
+                    <p onClick={handleDelete(tile)}>X</p>
                 </div>
             );
             input.next(
                 <React.Fragment>
-                    <h1>{board.title}</h1>
+                    <div className="header">
+                        <h1>{board.title}</h1>
+                    </div>
                     <div className="board">
                         {tiles}
                         <Formik
