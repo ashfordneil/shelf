@@ -38,6 +38,11 @@ impl_web! {
                 bar: None,
             })
         }
+
+        #[post("/request-body")]
+        fn request_body(&self, body: Vec<u8>) -> Result<String, ()> {
+            Ok(format!("We received {} bytes", body.len()))
+        }
     }
 }
 
