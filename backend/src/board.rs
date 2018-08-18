@@ -70,11 +70,18 @@ impl Board {
 
     pub fn checkin(board_id: &Uuid, jwt: String, board: Board) -> Result<(), ()> {
         let authstore = Board::auth_storage();
-        let mut authstore = authstore.lock().unwrap();
-        let mut entry = authstore.get(board_id);
-        if let Some(stored_jwt) = entry {
-            println!("stored JWT: {:?}", stored_jwt);
-            println!("header JWT: {:?}", jwt);
+        let stored_jwt = {
+            let authstore = authstore.lock().unwrap();
+            // TODO: Add error checking
+            let entry = authstore.get(board_id).unwrap().clone();
+            entry
+        };
+        if (jwt.eq(&stored_jwt)) {
+            let mut authstore = authstore.lock().unwrap();
+            authstore.remove(board_id);
+        }
+        else {
+            return Err(());
         }
         Ok(())
     }

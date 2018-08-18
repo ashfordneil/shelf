@@ -119,4 +119,31 @@ mod test {
         assert!(Board::checkout(&board_id).is_none());
         assert!(Board::checkout(&board_id).is_none());
     }
+
+    #[test]
+    fn test_lock_removed() {
+        let board_id = Board::post();
+
+        let jwt = Board::checkout(&board_id).unwrap();
+
+        // Ensure that the lock is in place
+        assert!(Board::checkout(&board_id).is_none());
+
+        let tile = Tile {
+            content: "heya".to_string()
+        };
+
+        let tile_id = Tile::post(tile);
+
+        let board = Board {
+            tiles: vec![tile_id]
+        };
+
+        let result = Board::checkin(&board_id, jwt, board);
+
+        assert!(result.is_ok());
+
+        // Ensure that the lock is no longer in place
+        assert!(Board::checkout(&board_id).is_some());
+    }
 }
