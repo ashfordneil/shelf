@@ -6,5 +6,6 @@ export interface RawBoard {
 }
 
 export interface Board {
+    title: string;
     tiles: Tile[];
 }

@@ -5,8 +5,10 @@ export interface Pipe<T> {
     output: Observable<T>;
 }
 
-export const create = <T>(t: T): Pipe<T> => {
-    const pipe = new BehaviorSubject<T>(t);
+export const create = <T>(t: T | null): Pipe<T> => {
+    const pipe = t === null
+        ? new Subject<T>()
+        : new BehaviorSubject<T>(t);
     const input = pipe;
     const output = pipe.asObservable();
 
