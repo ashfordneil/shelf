@@ -1,21 +1,21 @@
 //! Module for doing crud operations on the board itself.
 use std::collections::HashMap;
-use std::path::Path;
-use mvdb::Mvdb;
-use uuid::Uuid;
-
-use std::io::prelude::*;
 use std::fs::File;
+use std::io::Write;
+use std::path::Path;
+use std::sync::{Arc, Mutex};
+
+use uuid::Uuid;
 
 use jwt::{encode, Header};
 
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde_json;
 
+use mvdb::Mvdb;
+
 #[derive(Default, Clone, Debug)]
 pub struct Auth;
-
-// TODO: Fix hashing for file storage
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum AuthKey {
@@ -77,7 +77,7 @@ impl Auth {
         let store = store.access(|db| db.clone())
             .expect("Could not read Auth file");
         store.contains_key(&key)
-     }
+    }
 
     pub fn lock(key: AuthKey) -> Result<String, ()> {
         if !Auth::is_locked(key) {
@@ -85,7 +85,6 @@ impl Auth {
 
             let claims = key.clone();
             let new_jwt = encode(&Header::default(), &claims, "secret".as_ref());
-
             if let Ok(new_jwt) = new_jwt {
 
                 store.access_mut(|store_from_disk| 
@@ -106,7 +105,7 @@ impl Auth {
             Err(())
         }
     }
-// Checks if jwt token matches key
+
     pub fn is_valid(key: AuthKey, jwt: String) -> bool {
         let store = Auth::storage();
          let mut store_from_disk = store.access(|db| db.clone())
@@ -135,7 +134,6 @@ impl Auth {
                 store.remove(&key);
             })
             .expect("Failed to access file");
-            
             return Ok(());
         }
         else {

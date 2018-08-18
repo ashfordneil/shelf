@@ -20,7 +20,7 @@ export const NewBoard = (): Observable<React.JSXElement> {
         });
         await checkin(id, auth, { title: "My First Board", tiles: [tileId] });
 
-        const board = Board({ id });
+        const board = new Board({ id });
         board.subscribe(x => input.next(x));
     })();
 

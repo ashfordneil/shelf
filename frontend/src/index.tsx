@@ -5,32 +5,17 @@ import { map } from "rxjs/operators";
 
 import { create } from "./util";
 
-import { NewBoard } from "./board/NewBoard";
 import { Board } from "./board/Board";
-import * as tile from "./tile/services";
 
-const App = (): Observable<React.JSXElement> {
-    const board = NewBoard();
-
-    const stream = board.pipe(
-        map(board =>
-            <React.Fragment>
-                {board}
-                <div className="spacey" />
-                <div className="footer">
-                    <h3>Footer</h3>
-                </div>
-            </React.Fragment>
-        )
-    );
-
-    return stream;
+const App = () => {
+return (
+    <React.Fragment>
+        <Board id="0cf72c16-aa39-4216-ac86-2c1e2a412851" />
+        <div className="spacey" />
+        <div className="footer">
+            <h3>Footer</h3>
+        </div>
+    </React.Fragment>)
 }
 
-const main = () => {
-    const app = App();
-    const hook = document.getElementById("main");
-    app.subscribe(elem => ReactDOM.render(elem, hook));
-}
-
-main();
+ReactDOM.render(<App />, document.getElementById("main"));
