@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 
 use uuid::Uuid;
 
-use jwt::{encode, Header};
+use auth::{Auth, AuthKey};
 
 #[derive(Default, Clone, Debug, Response, Extract)]
 pub struct Tile {
@@ -26,14 +26,6 @@ impl Tile {
         STORAGE.clone()
     }
 
-    fn auth_storage() -> Arc<Mutex<HashMap<Uuid, String>>> {
-        lazy_static! {
-            static ref STORAGE: Arc<Mutex<HashMap<Uuid, String>>> = Default::default();
-        }
-
-        STORAGE.clone()
-    }
-
     /// Get the internals of a Tile
     pub fn get(id: &Uuid) -> Option<Tile> {
         let store = Tile::tile_storage();
@@ -41,23 +33,16 @@ impl Tile {
         store.get(id).cloned()
     }
 
-    pub fn checkout(tile_id: &Uuid) -> Option<String> {
+    fn exists(tile_id: &Uuid) -> bool {
         let store = Tile::tile_storage();
         let store = store.lock().unwrap();
-        if let Some(_tile) = store.get(tile_id).cloned() {
-            let authstore = Tile::auth_storage();
-            let mut authstore = authstore.lock().unwrap();
-            if authstore.contains_key(tile_id) {
-                return None;
-            }
+        store.get(tile_id).cloned().is_some()
+    }
 
-            let claims = JwtClaims {
-                tile_id: *tile_id
-            };
-            let new_jwt = encode(&Header::default(), &claims, "secret".as_ref());
-            if let Ok(new_jwt) = new_jwt {
-                authstore.insert(tile_id.clone(), new_jwt.to_string());
-                Some(new_jwt.to_string())
+    pub fn checkout(tile_id: &Uuid) -> Option<String> {
+        if Tile::exists(tile_id) {
+            if let Ok(jwt) = Auth::lock(AuthKey::Tile(*tile_id)) {
+                Some(jwt.to_string())
             }
             else {
                 None
@@ -69,26 +54,20 @@ impl Tile {
     }
 
     pub fn checkin(tile_id: &Uuid, jwt: String, tile: Tile) -> Result<(), ()> {
-        let authstore = Tile::auth_storage();
-        let stored_jwt = {
-            let authstore = authstore.lock().unwrap();
-            // TODO: Add error checking
-            let entry = authstore.get(tile_id).unwrap().clone();
-            entry
-        };
-        if jwt.eq(&stored_jwt) {
+        let key = AuthKey::Tile(*tile_id);
+
+        if Auth::is_valid(key, jwt.clone()) {
             let store = Tile::tile_storage();
             let mut store = store.lock().unwrap();
             if let Some(x) = store.get_mut(tile_id) {
                 *x = tile;
             }
-            let mut authstore = authstore.lock().unwrap();
-            authstore.remove(tile_id);
+
+            Auth::unlock(key, jwt.clone())
         }
         else {
-            return Err(());
+            Err(())
         }
-        Ok(())
     }
 
     /// Create a new Tile, and return a reference to it.

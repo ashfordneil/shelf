@@ -83,7 +83,7 @@ impl_web! {
             Ok(UuidWrapper(Tile::post(body)))
         }
 
-        #[post("/tile/:id")]
+        #[post("/tile/:id/edit")]
         fn checkout_tile(&self, id: String) -> Result<String, ()> {
             let id = Uuid::parse_str(&id).map_err(|e| {
                 println!("{:?}", e);

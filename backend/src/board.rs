@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 
 use uuid::Uuid;
 
-use jwt::{encode, Header};
+use auth::{Auth, AuthKey};
 
 #[derive(Clone, Debug, Response, Extract, PartialEq)]
 pub struct Board {
@@ -27,14 +27,6 @@ impl Board {
         STORAGE.clone()
     }
 
-    fn auth_storage() -> Arc<Mutex<HashMap<Uuid, String>>> {
-        lazy_static! {
-            static ref STORAGE: Arc<Mutex<HashMap<Uuid, String>>> = Default::default();
-        }
-
-        STORAGE.clone()
-    }
-
     /// Get the internals of a board
     pub fn get(id: &Uuid) -> Option<Board> {
         let store = Board::board_storage();
@@ -42,23 +34,16 @@ impl Board {
         store.get(id).cloned()
     }
 
-    pub fn checkout(board_id: &Uuid) -> Option<String> {
+    fn exists(board_id: &Uuid) -> bool {
         let store = Board::board_storage();
         let store = store.lock().unwrap();
-        if let Some(_board) = store.get(board_id).cloned() {
-            let authstore = Board::auth_storage();
-            let mut authstore = authstore.lock().unwrap();
-            if authstore.contains_key(board_id) {
-                return None;
-            }
+        store.get(board_id).cloned().is_some()
+    }
 
-            let claims = JwtClaims {
-                board_id: *board_id
-            };
-            let new_jwt = encode(&Header::default(), &claims, "secret".as_ref());
-            if let Ok(new_jwt) = new_jwt {
-                authstore.insert(board_id.clone(), new_jwt.to_string());
-                Some(new_jwt.to_string())
+    pub fn checkout(board_id: &Uuid) -> Option<String> {
+        if Board::exists(board_id) {
+            if let Ok(jwt) = Auth::lock(AuthKey::Board(*board_id)) {
+                Some(jwt.to_string())
             }
             else {
                 None
@@ -70,26 +55,20 @@ impl Board {
     }
 
     pub fn checkin(board_id: &Uuid, jwt: String, board: Board) -> Result<(), ()> {
-        let authstore = Board::auth_storage();
-        let stored_jwt = {
-            let authstore = authstore.lock().unwrap();
-            // TODO: Add error checking
-            let entry = authstore.get(board_id).unwrap().clone();
-            entry
-        };
-        if jwt.eq(&stored_jwt) {
+        let key = AuthKey::Board(*board_id);
+
+        if Auth::is_valid(key, jwt.clone()) {
             let store = Board::board_storage();
             let mut store = store.lock().unwrap();
             if let Some(x) = store.get_mut(board_id) {
                 *x = board;
             }
-            let mut authstore = authstore.lock().unwrap();
-            authstore.remove(board_id);
+
+            Auth::unlock(key, jwt.clone())
         }
         else {
-            return Err(());
+            Err(())
         }
-        Ok(())
     }
 
     /// Create a new board, and return a reference to it.
@@ -105,6 +84,4 @@ impl Board {
         store.insert(uuid.clone(), Board { title, tiles: Vec::new() });
         uuid
     }
-
-    
 }
