@@ -16,6 +16,7 @@ body {
     display: flex;
     flex-flow: column;
     align-items: stretch;
+    max-height: 100%;
 }
 
 h1 {
@@ -27,6 +28,7 @@ h1 {
 }
 
 .board {
+    overflow-y: scroll;
     display: grid;
     padding: 1em;
 
@@ -58,4 +60,8 @@ h1 {
 
     @media #{$wider-screens} {
     }
+}
+
+.footer {
+    padding-left: 0.5em;
 }
