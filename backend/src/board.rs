@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use jwt::{encode, decode, Header, Algorithm, Validation};
 
-#[derive(Default, Clone, Debug, Response)]
+#[derive(Default, Clone, Debug, Response, Extract)]
 pub struct Board {
     /// All of the tiles in the board
     tiles: Vec<Uuid>,
@@ -68,6 +68,17 @@ impl Board {
         }
     }
 
+    pub fn checkin(board_id: &Uuid, jwt: String, board: Board) -> Result<(), ()> {
+        let authstore = Board::auth_storage();
+        let mut authstore = authstore.lock().unwrap();
+        let mut entry = authstore.get(board_id);
+        if let Some(stored_jwt) = entry {
+            println!("stored JWT: {:?}", stored_jwt);
+            println!("header JWT: {:?}", jwt);
+        }
+        Ok(())
+    }
+
     /// Create a new board, and return a reference to it.
     pub fn post() -> Uuid {
         let store = Board::board_storage();
@@ -81,4 +92,6 @@ impl Board {
         store.insert(uuid.clone(), Default::default());
         uuid
     }
+
+    
 }
