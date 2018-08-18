@@ -25,7 +25,7 @@ export const checkout = async (id: string): Promise<string> => {
 export const checkin = async (id: string, jwt: string, body: Tile): Promise<void> => {
     const config = JSON.parse(JSON.stringify(axiosConfig)) as typeof axiosConfig;
     config.headers["auth"] = jwt;
-    await axios.post(`/tile/${id}`, body, axiosConfig);
+    await axios.patch(`/tile/${id}`, body, config);
 }
 
 export const delete_ = async (id: string): Promise<void> => {

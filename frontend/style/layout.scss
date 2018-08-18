@@ -11,6 +11,14 @@ body {
     align-items: stretch;
 }
 
+.header{
+  	background-color: #032B43;
+}
+
+.footer{
+  background-color: #032B43;
+}
+
 #main {
     flex: 1;
     display: flex;
@@ -59,6 +67,7 @@ p {
 
 .tile {
     height: 15em;
+    border-radius: 4px;
     h2 {
         color: white;
     }

@@ -3,7 +3,8 @@ import { Observable, from } from "rxjs";
 import { switchMap } from "rxjs/operators";
 
 import { Board } from "./Board";
-import { post } from "./services";
+import { checkout, checkin, post } from "./services";
+import * as tile from "../tile/services";
 
 import { create } from "../util";
 
@@ -12,6 +13,13 @@ export const NewBoard = (): Observable<React.JSXElement> {
 
     (async () => {
         const id = await post("My First Board");
+        const auth = await checkout(id);
+        const tileId = await tile.post({
+            title: "Tile #1",
+            content: "Put your text here"
+        });
+        await checkin(id, auth, { title: "My First Board", tiles: [tileId] });
+
         const board = Board({ id });
         board.subscribe(x => input.next(x));
     })();
