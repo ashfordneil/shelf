@@ -1,5 +1,5 @@
 import * as React from "react";
-import { interval } from "rxjs";
+import { Observable } from "rxjs";
 
 import { get } from "./services";
 
@@ -17,14 +17,17 @@ export const Board = (props: Props): Observable<React.JSXElement> {
             const board = await get(props.id);
             const tiles = board.tiles.map(tile =>
                 <div id={tile.id} className="tile">
-                    <h2>Title</h2>
+                    <h2>{tile.title}</h2>
                     <p>{tile.content}</p>
                 </div>
             );
             input.next(
-                <div className="board">
-                    {tiles}
-                </div>
+                <React.Fragment>
+                    <h1>{board.title}</h1>
+                    <div className="board">
+                        {tiles}
+                    </div>
+                </React.Fragment>
             );
         } catch (error) {
             input.next(

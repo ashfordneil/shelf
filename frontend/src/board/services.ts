@@ -10,7 +10,7 @@ export const get = async (id: string): Promise<Board | null> => {
         const raw = await axios.get(`/board/${id}`, axiosConfig);
         const shallow =  raw.data as Board;
         const tiles = await Promise.all(shallow.tiles.map(id => tile.get(id)));
-        return { tiles };
+        return { title: shallow.title, tiles };
     } catch (error) {
         return null;
     }
