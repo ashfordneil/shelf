@@ -10,3 +10,10 @@ Build for release with `yarn build`
 # Back-end
 Run with `cargo run`
 Build for release with `cargo build --release`
+
+# API
+`/board` => POST
+returns a UUID representing a newly created empty board
+
+`/board/:id` => GET
+takes a UUID representing a board, returns an array of UUIDs representing tiles in that board
