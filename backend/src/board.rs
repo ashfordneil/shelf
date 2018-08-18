@@ -4,8 +4,6 @@ use std::sync::{Arc, Mutex};
 
 use uuid::Uuid;
 
-use jwt::{encode, Header};
-
 use auth::{Auth, AuthKey};
 
 #[derive(Clone, Debug, Response, Extract, PartialEq)]
@@ -86,6 +84,4 @@ impl Board {
         store.insert(uuid.clone(), Board { title, tiles: Vec::new() });
         uuid
     }
-
-    
 }
