@@ -4,9 +4,15 @@ import { Observable } from "rxjs";
 import { get } from "./services";
 
 import { create } from "../util";
+import { Tile } from "../tile/models";
+import { delete_ } from "../tile/services";
 
 interface Props {
     id: string;
+}
+
+const handleDelete = (tile: Tile) => (): Promise<void> => {
+    return delete_(tile.id)
 }
 
 export const Board = (props: Props): Observable<React.JSXElement> {
@@ -19,6 +25,7 @@ export const Board = (props: Props): Observable<React.JSXElement> {
                 <div id={tile.id} className="tile">
                     <h2>{tile.title}</h2>
                     <p>{tile.content}</p>
+                    <p onClick={handleDelete(tile)}>X</p>
                 </div>
             );
             input.next(

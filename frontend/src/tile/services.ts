@@ -27,3 +27,7 @@ export const checkin = async (id: string, jwt: string, body: Tile): Promise<void
     config.headers["auth"] = jwt;
     await axios.post(`/tile/${id}`, body, axiosConfig);
 }
+
+export const delete_ = async (id: string): Promise<void> => {
+    await axios.delete(`/tile/${id}`, axiosConfig);
+}
