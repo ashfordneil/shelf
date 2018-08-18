@@ -7,6 +7,7 @@ extern crate tower_web;
 extern crate uuid;
 extern crate jsonwebtoken as jwt;
 extern crate serde;
+extern crate serde_json;
 
 use tower_web::ServiceBuilder;
 

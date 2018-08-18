@@ -9,16 +9,43 @@ use std::fs::File;
 
 use jwt::{encode, Header};
 
+use serde::{Serialize, Deserialize, Serializer, Deserializer};
+use serde_json;
+
 #[derive(Default, Clone, Debug)]
 pub struct Auth;
 
 // TODO: Fix hashing for file storage
 
-#[derive(Debug, PartialEq, Eq, Hash, Serialize, Deserialize, Clone, Copy)]
-#[serde(tag = "type", content = "id")]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum AuthKey {
     Board(Uuid),
     Tile(Uuid),
+}
+
+impl Serialize for AuthKey {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::Error;
+        let intermediate = match self {
+            AuthKey::Board(x) => (true, x),
+            AuthKey::Tile(x) => (false, x),
+        };
+        let output = serde_json::to_string(&intermediate).map_err(S::Error::custom)?;
+        output.serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for AuthKey {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error;
+        let string = String::deserialize(deserializer)?;
+        let intermediate = serde_json::from_str(&string).map_err(D::Error::custom)?;
+        let output = match intermediate {
+            (true, x) => AuthKey::Board(x),
+            (false, x) => AuthKey::Board(x),
+        };
+        Ok(output)
+    }
 }
 
 type JwtString = String;
@@ -58,8 +85,6 @@ impl Auth {
 
             let claims = key.clone();
             let new_jwt = encode(&Header::default(), &claims, "secret".as_ref());
-
-
 
             if let Ok(new_jwt) = new_jwt {
 
