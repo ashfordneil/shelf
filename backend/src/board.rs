@@ -45,11 +45,18 @@ impl Board {
         let store = Board::board_storage();
         let store = store.lock().unwrap();
         if let Some(board) = store.get(board_id).cloned() {
+            let authstore = Board::auth_storage();
+            let mut authstore = authstore.lock().unwrap();
+            if authstore.contains_key(board_id) {
+                return None;
+            }
+
             let claims = JwtClaims {
                 board_id: *board_id
             };
             let new_jwt = encode(&Header::default(), &claims, "secret".as_ref());
             if let Ok(new_jwt) = new_jwt {
+                authstore.insert(board_id.clone(), new_jwt.to_string());
                 Some(new_jwt.to_string())
             }
             else {
