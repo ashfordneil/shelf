@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use jwt::{encode, Header};
 
-#[derive(Default, Clone, Debug, Response, Extract)]
+#[derive(Default, Clone, Debug, Response, Extract, PartialEq)]
 pub struct Board {
     /// All of the tiles in the board
     pub tiles: Vec<Uuid>,

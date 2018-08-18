@@ -136,9 +136,12 @@ mod test {
             tiles: vec![tile_id]
         };
 
-        let result = Board::checkin(&board_id, jwt, board);
+        let result = Board::checkin(&board_id, jwt, board.clone());
 
         assert!(result.is_ok());
+
+        let gotten_board = Board::get(&board_id).unwrap();
+        assert_eq!(board, gotten_board);
     }
 
     #[test]
