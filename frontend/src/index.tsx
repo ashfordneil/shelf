@@ -10,7 +10,7 @@ import * as tile from "./tile/services";
 
 const App = (): Observable<React.JSXElement> {
     const title = <h1>Title of Board</h1>;
-    const board = Board({ id: "hello" });
+    const board = Board({ id: "FIXME" });
 
     const stream = board.pipe(
         map(board => 

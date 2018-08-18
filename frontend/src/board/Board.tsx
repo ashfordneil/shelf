@@ -1,6 +1,8 @@
 import * as React from "react";
 import { interval } from "rxjs";
 
+import { get } from "./services";
+
 import { create } from "../util";
 
 interface Props {
@@ -10,35 +12,31 @@ interface Props {
 export const Board = (props: Props): Observable<React.JSXElement> {
     const { input, output } = create<React.JSXElement>(<h2>Loading</h2>);
 
-    interval(1000).subscribe(
-        () => input.next(<div className="board">
-                <div className="tile">
+    (async () => {
+        try {
+            const board = await get(props.id);
+            const tiles = board.tiles.map(tile =>
+                <div id={tile.id} className="tile">
                     <h2>Title</h2>
-                    <p>Hello</p>
+                    <p>{tile.content}</p>
                 </div>
-                <div className="tile">
-                    <h2>Title</h2>
-                    <p>World</p>
+            );
+            input.next(
+                <div className="board">
+                    {tiles}
                 </div>
-                <div className="tile">
-                    <h2>Title</h2>
-                    <p>World</p>
+            );
+        } catch (error) {
+            input.next(
+                <div className="board">
+                    <div className="tile">
+                        <h2>Error</h2>
+                        <p>{error.message}</p>
+                    </div>
                 </div>
-                <div className="tile">
-                    <h2>Title</h2>
-                    <p>World</p>
-                </div>
-                <div className="tile">
-                    <h2>Title</h2>
-                    <p>World</p>
-                </div>
-                <div className="tile">
-                    <h2>Title</h2>
-                    <p>World</p>
-                </div>
-            </div>
-        )
-    );
+            );
+        }
+    })();
 
     return output;
 }
