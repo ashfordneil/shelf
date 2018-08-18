@@ -42,7 +42,7 @@ impl_web! {
             Ok(UuidWrapper(Board::post()))
         }
 
-        #[post("/board/:id")]
+        #[post("/board/:id/edit")]
         fn checkout_board(&self, id: String) -> Result<String, ()> {
             let id = Uuid::parse_str(&id).map_err(|e| {
                 println!("{:?}", e);
@@ -52,12 +52,12 @@ impl_web! {
 
 
         #[patch("/board/:id")]
-        fn checkin_board(&self, id: String, jwt: String, body: Board) -> Result<String, ()> {
+        fn checkin_board(&self, id: String, auth: String, body: Board) -> Result<String, ()> {
             let id = Uuid::parse_str(&id).map_err(|e| {
                 println!("{:?}", e);
             })?;
             // let jwt = "".to_string();
-            let resp = Board::checkin(&id, jwt, body);
+            let resp = Board::checkin(&id, auth, body);
             if let Ok(_) = resp {
                 Ok("ok".to_string().to_string())
             }

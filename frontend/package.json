@@ -9,6 +9,7 @@
   "devDependencies": {
     "@types/axios": "^0.14.0",
     "@types/react": "^16.4.11",
+    "@types/react-dom": "^16.0.7",
     "node-sass": "^4.9.3",
     "parcel-bundler": "^1.9.7",
     "typescript": "^3.0.1"
@@ -16,6 +17,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "react": "^16.4.2",
+    "react-dom": "^16.4.2",
     "rxjs": "^6.2.2"
   }
 }
