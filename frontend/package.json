@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "formik": "^1.0.3",
     "react": "^16.4.2",
+    "react-contenteditable": "^2.1.5",
     "react-dom": "^16.4.2",
     "rxjs": "^6.2.2"
   }

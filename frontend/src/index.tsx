@@ -10,11 +10,7 @@ import { Board } from "./board/Board";
 const App = () => {
 return (
     <React.Fragment>
-        <Board id="0cf72c16-aa39-4216-ac86-2c1e2a412851" />
-        <div className="spacey" />
-        <div className="footer">
-            <h3>Footer</h3>
-        </div>
+        <Board id="137fcc0c-6239-4ff9-a95a-da95475f5bc8" />
     </React.Fragment>)
 }
 

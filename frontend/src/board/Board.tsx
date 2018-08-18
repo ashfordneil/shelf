@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Observable } from "rxjs";
+import ContentEditable from "react-contenteditable";
 
 import * as boardServices from "./services";
 import * as tileServices from "../tile/services";
@@ -7,7 +8,6 @@ import * as tileServices from "../tile/services";
 import * as boardModels from "./models";
 
 import { create } from "../util";
-import {Formik, Form, Field, FormikErrors} from 'formik';
 import { Tile } from "../tile/models";
 import { delete_ } from "../tile/services";
 
@@ -28,6 +28,12 @@ enum Step {
 interface State {
     step: Step;
     board: boardModels.Board | null;
+    // null for not editing
+    // string for editing (string = jwt)
+    // 0 for new tile
+    editingTile: null | string | 0;
+    title: string;
+    data: string;
 }
 
 export class Board extends React.Component<Props, State> {
@@ -36,6 +42,9 @@ export class Board extends React.Component<Props, State> {
         this.state = {
             step: Step.Loading,
             board: null,
+            editingTile: 0,
+            title: "title here...",
+            data: "data here...",
         }
     }
 
@@ -52,6 +61,12 @@ export class Board extends React.Component<Props, State> {
         });
     }
 
+    newTile() {
+        console.log("CREATING TILE");
+        console.log(`TITLE: ${this.state.tile}`);
+        console.log(`DATA: ${this.state.data}`);
+    }
+
     render() {
         // const {} = this.props;
         const {step, board} = this.state;
@@ -61,69 +76,73 @@ export class Board extends React.Component<Props, State> {
                 return <h2>Loading</h2>
             }
             case Step.Done: {
-                return <React.Fragment>
-                    <div className="header">
-                        <h1>{board.title}</h1>
-                    </div>
+                const header = 
+                    <div className="topColour">
+                        <div className="header">
+                            <h1>{board.title}</h1>
+                            <div className="dropdown">
+                                <button className="dropbtn">
+                                    <i className="fas fa-caret-right"></i>
+                                    Options
+                                </button>
+                                <div className="dropdown-content">
+                                    <a href="#">Add Board</a>
+                                    <a href="#">Delete Board</a>
+                                    <a href="#">Other boards</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>;
+
+                const footer =
+                    <div className="footer">
+                        <h2>SHELF</h2>
+                        <div className="addButton">
+                            <h2><i className="fas fa-plus"></i></h2>
+                        </div>
+                    </div>;
+
+                const editing = this.state.editingTile === null
+                    ? null
+                    : <div className="tile new">
+                            <h2>
+                                <span contentEditable>New tile</span>
+                                <div className="tileButton" onClick={() => this.setState({ editingTile: null })}>
+                                    <i className="fas fa-times"></i>
+                                </div>
+                                <div className="tileButton" onClick={() => this.newTile()}>
+                                    <i className="fas fa-save"></i>
+                                </div>
+                            </h2>
+                            <ContentEditable
+                                html={this.state.data}
+                                disabled={false}
+                                onChange={event => this.setState({ data: event.target.value })}
+                                tagName="p"
+                            />
+                        </div>;
+                
+                const boardR = 
                     <div className="board">
                         {board.tiles.map(tile =>
-                        <div key={tile.id} className="tile">
-                            <h2>{tile.title}</h2>
-                            <p>{tile.content}</p>
-                            <p onClick={handleDelete(tile)}>X</p>
-                        </div>)}
-                        <Formik
-                            initialValues={{
-                                title: '',
-                                content: '',
-                            }}
-                            validate={(values) => {
-                                const errors: FormikErrors<typeof values> = {};
-                                if (!values.title) {
-                                    errors.title = "Title required";
-                                }
-
-                                if (!values.content) {
-                                    errors.content = "content required";
-                                }
-
-                                return errors;
-                            }}
-                            onSubmit={(values, {setSubmitting, resetForm}) => {
-                                tileServices.post(values).then(tileId => {
-                                    boardServices.checkout(this.props.id).then(jwt => {
-                                        let newArr = board.tiles.map(o => o.id);
-                                        newArr.push(tileId);
-                                        boardServices.checkin(this.props.id, jwt, {
-                                            title: board.title,
-                                            tiles: newArr as Tile[],
-                                        })
-                                        .then(() => this.loadBoard())
-                                        .then(() => resetForm())
-                                    })
-                                });
-                            }}
-                            render={({values}) => 
-                                <Form>
-                                    <div id='newthing' className="tile">
-                                        <h2>
-                                            <Field 
-                                                id="title"
-                                                name="title"
-                                            />
-                                        </h2>
-                                        <p>
-                                            <Field 
-                                                id="content"
-                                                name="content"
-                                            />
-                                        </p>
-                                        <button type="submit">Submit</button>
+                            <div key={tile.id} className="tile">
+                                <h2>
+                                    <span>
+                                        {tile.title}
+                                    </span>
+                                    <div className="tileButton" onClick={handleDelete(tile)}>
+                                        <i className="fas fa-trash"></i>
                                     </div>
-                                </Form>
+                                </h2>
+                                <p>{tile.content}</p>
+                            </div>)
                         }
-                        />
+                        {editing}
                     </div>
+                return <React.Fragment>
+                    {header}
+                    {boardR}
+                    {footer}
                 </React.Fragment>
             }
             case Step.Error: {
