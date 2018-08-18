@@ -12,6 +12,8 @@ use jwt::{encode, Header};
 #[derive(Default, Clone, Debug)]
 pub struct Auth;
 
+// TODO: Fix hashing for file storage
+
 #[derive(Debug, PartialEq, Eq, Hash, Serialize, Deserialize, Clone, Copy)]
 #[serde(tag = "type", content = "id")]
 pub enum AuthKey {
@@ -53,14 +55,20 @@ impl Auth {
     pub fn lock(key: AuthKey) -> Result<String, ()> {
         if !Auth::is_locked(key) {
             let store = Auth::storage();
-            let mut store_from_disk = store.access(|db| db.clone())
-                .expect("Failed to access file");
 
             let claims = key.clone();
             let new_jwt = encode(&Header::default(), &claims, "secret".as_ref());
+
+
+
             if let Ok(new_jwt) = new_jwt {
-                store_from_disk.insert(key.clone(), new_jwt.to_string());
-                println!("{:?}", new_jwt.to_string());
+
+                store.access_mut(|store_from_disk| 
+                {
+                    store_from_disk.insert(key.clone(), new_jwt.to_string());
+                })
+                .expect("Failed to access file");
+
                 Ok(new_jwt.to_string())
             }
             else {
@@ -98,9 +106,11 @@ impl Auth {
     pub fn unlock(key: AuthKey, jwt: String) -> Result<(), ()> {
         if Auth::is_valid(key, jwt) {
             let store = Auth::storage();
-            let mut store = store.access(|db| db.clone())
-                .expect("Failed to access file");
-            store.remove(&key);
+            store.access_mut(|store| {
+                store.remove(&key);
+            })
+            .expect("Failed to access file");
+            
             return Ok(());
         }
         else {
