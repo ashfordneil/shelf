@@ -29,31 +29,52 @@ struct DataHandler;
 struct UuidWrapper(Uuid);
 
 impl_web! {
-    impl HelloWorld {
-        #[get("/")]
-        fn hello_world(&self) -> Result<String, ()> {
-            Ok("Hello world".to_string())
-        }
+    // impl HelloWorld {
+    //     #[get("/")]
+    //     fn hello_world(&self) -> Result<String, ()> {
+    //         Ok("Hello world".to_string())
+    //     }
 
-        #[get("/healthz")]
-        fn health(&self) -> Result<String, ()> {
-            Ok("ok".to_string())
-        }
+    //     #[get("/healthz")]
+    //     fn health(&self) -> Result<String, ()> {
+    //         Ok("ok".to_string())
+    //     }
 
-        #[get("/one/:param")]
-        fn path_str(&self, param: String) -> Result<String, ()> {
-            Ok(format!("We received: {} in the path", param))
-        }
+    //     #[get("/one/:param")]
+    //     fn path_str(&self, param: String) -> Result<String, ()> {
+    //         Ok(format!("We received: {} in the path", param))
+    //     }
 
-        #[get("/data")]
-        #[content_type("json")]
-        fn greet(&self) -> Result<MyData, ()> {
-            Ok(MyData {
-                foo: 123,
-                bar: None,
-            })
-        }
-    }
+    //     #[get("/data")]
+    //     #[content_type("json")]
+    //     fn greet(&self) -> Result<MyData, ()> {
+    //         Ok(MyData {
+    //             foo: 123,
+    //             bar: None,
+    //         })
+    //     }
+
+    //     #[post("/data")]
+    //     fn greet2(&self, body: MyData2) -> Result<String, ()> {
+    //         Ok(format!("Hello, {:?}", body))
+    //     }
+
+    //     #[post("/request-body")]
+    //     fn request_body(&self, body: Vec<u8>) -> Result<String, ()> {
+    //         Ok(format!("We received {} bytes", body.len()))
+    //     }
+
+    //     #[post("/create")]
+    //     #[content_type("application/json")]
+    //     fn create(&self) -> Result<CreatedResponse, ()> {
+    //         Ok(CreatedResponse {
+    //             message: "created",
+    //             x_my_header: "awesome",
+    //         })
+    //     }
+
+
+    // }
 
     impl DataHandler {
         #[get("/board/:id")]
@@ -78,7 +99,7 @@ pub fn main() {
     println!("Listening on http://{}", addr);
 
     ServiceBuilder::new()
-        .resource(DataHandler)
+       .resource(DataHandler)
         .run(&addr)
         .unwrap();
 }
