@@ -72,11 +72,12 @@ impl Tile {
 
         if Auth::is_valid(key, jwt.clone()) {
             let store = Tile::tile_storage();
-        let mut store = store.access(|db| db.clone())
-            .expect("Failed to access tile file");
-            if let Some(x) = store.get_mut(tile_id) {
-                *x = tile;
-            }
+            store.access_mut(|store| {
+                if let Some(x) = store.get_mut(tile_id) {
+                    *x = tile;
+                }
+            })
+            .expect("Could not read tile file");
 
             Auth::unlock(key, jwt.clone())
         }
@@ -88,15 +89,19 @@ impl Tile {
     /// Create a new Tile, and return a reference to it.
     pub fn post(new_tile: Tile) -> Uuid {
         let store = Tile::tile_storage();
-        let mut store = store.access(|db| db.clone())
-            .expect("Failed to access tile file");
-        let uuid = loop {
-            let uuid = Uuid::new_v4();
-            if !store.contains_key(&uuid) {
-                break uuid;
-            }
-        };
-        store.insert(uuid.clone(), new_tile);
-        uuid
+        let mut retval: Option<Uuid> = None;
+        store.access_mut(|store| {
+            let uuid = loop {
+                let uuid = Uuid::new_v4();
+                if !store.contains_key(&uuid) {
+                    break uuid;
+                }
+            };
+            store.insert(uuid.clone(), new_tile);
+            retval = Some(uuid.clone());
+        })
+        .expect("Could not access tile file");
+
+        retval.unwrap()
     }
 }

@@ -44,11 +44,9 @@ impl Auth {
     }
 
     pub fn is_locked(key: AuthKey) -> bool {
-        let file = Path::new("target/database/auth.json");
-        let my_mvdb: Mvdb<HashMap<AuthKey, JwtString>> = Mvdb::from_file_or_default(&file)
-            .expect("Could not write to file");
-        let store = my_mvdb.access(|db| db.clone())
-        .expect("Failed to access file");
+        let store = Auth::storage();
+        let store = store.access(|db| db.clone())
+            .expect("Could not read Auth file");
         store.contains_key(&key)
      }
 

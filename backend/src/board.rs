@@ -75,11 +75,13 @@ impl Board {
 
         if Auth::is_valid(key, jwt.clone()) {
             let store = Board::board_storage();
-            let mut store = store.access(|db| db.clone())
-                .expect("Could not read board file");
-            if let Some(x) = store.get_mut(board_id) {
-                *x = board;
-            }
+            store.access_mut(|store| {
+                if let Some(x) = store.get_mut(board_id) {
+                    *x = board;
+                }
+            })
+            .expect("Could not read board file");
+
 
             Auth::unlock(key, jwt.clone())
         }
@@ -88,18 +90,22 @@ impl Board {
         }
     }
 
-    /// Create a new board, and return a reference to it.
+    /// Create a new board, and return a reference to itr.
     pub fn post(board: Board) -> Uuid {
         let store = Board::board_storage();
-        let mut store = store.access(|db| db.clone())
-            .expect("Could not access board file");
-        let uuid = loop {
-            let uuid = Uuid::new_v4();
-            if !store.contains_key(&uuid) {
-                break uuid;
-            }
-        };
-        store.insert(uuid.clone(), board);
-        uuid
+        let mut retval: Option<Uuid> = None;
+        store.access_mut(|store| {
+            let uuid = loop {
+                let uuid = Uuid::new_v4();
+                if !store.contains_key(&uuid) {
+                    break uuid;
+                }
+            };
+            store.insert(uuid.clone(), board);
+            retval = Some(uuid.clone());
+        })
+        .expect("Could not access board file");
+
+        retval.unwrap()
     }
 }
