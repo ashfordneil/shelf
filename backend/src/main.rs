@@ -84,3 +84,39 @@ pub fn main() {
         .run(&addr)
         .unwrap();
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_update_board() {
+        let board_id = Board::post();
+
+        let jwt = Board::checkout(&board_id).unwrap();
+
+        let tile = Tile {
+            content: "heya".to_string()
+        };
+
+        let tile_id = Tile::post(tile);
+
+        let board = Board {
+            tiles: vec![tile_id]
+        };
+
+        let result = Board::checkin(&board_id, jwt, board);
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_lock_board() {
+        let board_id = Board::post();
+
+        assert!(Board::checkout(&board_id).is_some());
+        assert!(Board::checkout(&board_id).is_none());
+        assert!(Board::checkout(&board_id).is_none());
+        assert!(Board::checkout(&board_id).is_none());
+    }
+}
