@@ -1,12 +1,20 @@
 import * as React from "react";
-import { interval } from "rxjs";
+import { Observable } from "rxjs";
 
-import { get } from "./services";
+import * as boardServices from "./services";
+import * as tileServices from "../tile/services";
 
 import { create } from "../util";
+import {Formik, Form, Field, FormikErrors} from 'formik';
+import { Tile } from "../tile/models";
+import { delete_ } from "../tile/services";
 
 interface Props {
     id: string;
+}
+
+const handleDelete = (tile: Tile) => (): Promise<void> => {
+    return delete_(tile.id)
 }
 
 export const Board = (props: Props): Observable<React.JSXElement> {
@@ -14,17 +22,72 @@ export const Board = (props: Props): Observable<React.JSXElement> {
 
     (async () => {
         try {
-            const board = await get(props.id);
+            const board = await boardServices.get(props.id);
             const tiles = board.tiles.map(tile =>
-                <div id={tile.id} className="tile">
-                    <h2>Title</h2>
+                <div key={tile.id} className="tile">
+                    <h2>{tile.title}</h2>
                     <p>{tile.content}</p>
+                    <p onClick={handleDelete(tile)}>X</p>
                 </div>
             );
             input.next(
-                <div className="board">
-                    {tiles}
-                </div>
+                <React.Fragment>
+                    <div className="header">
+                        <h1>{board.title}</h1>
+                    </div>
+                    <div className="board">
+                        {tiles}
+                        <Formik
+                            initialValues={{
+                                title: '',
+                                content: '',
+                            }}
+                            validate={(values) => {
+                                const errors: FormikErrors<typeof values> = {};
+                                if (!values.title) {
+                                    errors.title = "Title required";
+                                }
+
+                                if (!values.content) {
+                                    errors.content = "content required";
+                                }
+
+                                return errors;
+                            }}
+                            onSubmit={(values, {setSubmitting, resetForm}) => {
+                                tileServices.post(values).then(tileId => {
+                                    boardServices.checkout(props.id).then(jwt => {
+                                        let newArr = board.tiles.map(o => o.id);
+                                        newArr.push(tileId);
+                                        boardServices.checkin(props.id, jwt, {
+                                            title: board.title,
+                                            tiles: newArr as Tile[],
+                                        }).then(() => resetForm())
+                                    })
+                                });
+                            }}
+                            render={({values}) => 
+                                <Form>
+                                    <div id='newthing' className="tile">
+                                        <h2>
+                                            <Field 
+                                                id="title"
+                                                name="title"
+                                             />
+                                        </h2>
+                                        <p>
+                                            <Field 
+                                                id="content"
+                                                name="content"
+                                             />
+                                        </p>
+                                        <button type="submit">Submit</button>
+                                    </div>
+                                </Form>
+                        }
+                        />
+                    </div>
+                </React.Fragment>
             );
         } catch (error) {
             input.next(

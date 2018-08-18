@@ -75,7 +75,7 @@ impl Board {
     }
 
     /// Create a new board, and return a reference to it.
-    pub fn post(title: String) -> Uuid {
+    pub fn post(board: Board) -> Uuid {
         let store = Board::board_storage();
         let mut store = store.access(|db| db.clone())
             .expect("Could not access board file");
@@ -85,7 +85,7 @@ impl Board {
                 break uuid;
             }
         };
-        store.insert(uuid.clone(), Board { title, tiles: Vec::new() });
+        store.insert(uuid.clone(), board);
         uuid
     }
 }
