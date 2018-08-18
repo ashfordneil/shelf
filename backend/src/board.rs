@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use jwt::{encode, Header};
 
-#[derive(Default, Clone, Debug, Response, Extract, PartialEq)]
+#[derive(Clone, Debug, Response, Extract, PartialEq)]
 pub struct Board {
     pub title: String,
     /// All of the tiles in the board
@@ -93,7 +93,7 @@ impl Board {
     }
 
     /// Create a new board, and return a reference to it.
-    pub fn post() -> Uuid {
+    pub fn post(title: String) -> Uuid {
         let store = Board::board_storage();
         let mut store = store.lock().unwrap();
         let uuid = loop {
@@ -102,7 +102,7 @@ impl Board {
                 break uuid;
             }
         };
-        store.insert(uuid.clone(), Default::default());
+        store.insert(uuid.clone(), Board { title, tiles: Vec::new() });
         uuid
     }
 
