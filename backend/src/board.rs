@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 
 use uuid::Uuid;
 
-use jwt::{encode, decode, Header, Algorithm, Validation};
+use jwt::{encode, Header};
 
 #[derive(Default, Clone, Debug, Response, Extract)]
 pub struct Board {
@@ -44,7 +44,7 @@ impl Board {
     pub fn checkout(board_id: &Uuid) -> Option<String> {
         let store = Board::board_storage();
         let store = store.lock().unwrap();
-        if let Some(board) = store.get(board_id).cloned() {
+        if let Some(_board) = store.get(board_id).cloned() {
             let authstore = Board::auth_storage();
             let mut authstore = authstore.lock().unwrap();
             if authstore.contains_key(board_id) {
@@ -76,7 +76,7 @@ impl Board {
             let entry = authstore.get(board_id).unwrap().clone();
             entry
         };
-        if (jwt.eq(&stored_jwt)) {
+        if jwt.eq(&stored_jwt) {
             let mut authstore = authstore.lock().unwrap();
             authstore.remove(board_id);
         }

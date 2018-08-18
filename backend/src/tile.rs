@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 
 use uuid::Uuid;
 
-use jwt::{encode, decode, Header, Algorithm, Validation};
+use jwt::{encode, Header};
 
 #[derive(Default, Clone, Debug, Response, Extract)]
 pub struct Tile {
@@ -43,7 +43,7 @@ impl Tile {
     pub fn checkout(tile_id: &Uuid) -> Option<String> {
         let store = Tile::tile_storage();
         let store = store.lock().unwrap();
-        if let Some(tile) = store.get(tile_id).cloned() {
+        if let Some(_tile) = store.get(tile_id).cloned() {
             let authstore = Tile::auth_storage();
             let mut authstore = authstore.lock().unwrap();
             if authstore.contains_key(tile_id) {
@@ -75,7 +75,7 @@ impl Tile {
             let entry = authstore.get(tile_id).unwrap().clone();
             entry
         };
-        if (jwt.eq(&stored_jwt)) {
+        if jwt.eq(&stored_jwt) {
             let mut authstore = authstore.lock().unwrap();
             authstore.remove(tile_id);
         }
