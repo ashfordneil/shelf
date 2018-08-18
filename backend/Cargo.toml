@@ -7,3 +7,5 @@ authors = ["Neil Ashford <ashfordneil0@gmail.com>"]
 tower-web = "0.2.0"
 serde = "1.0.71"
 serde_json = "1.0.26"
+uuid = { version = "0.6.5", features = ["serde", "v4"] }
+lazy_static = "1.1.0"

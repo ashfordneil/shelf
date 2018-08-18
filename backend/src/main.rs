@@ -1,7 +1,16 @@
 #[macro_use]
+extern crate lazy_static;
+#[macro_use]
 extern crate tower_web;
+extern crate uuid;
 
 use tower_web::ServiceBuilder;
+
+use uuid::Uuid;
+
+mod board;
+
+use board::Board;
 
 #[derive(Clone, Debug)]
 struct HelloWorld;
@@ -12,6 +21,12 @@ struct MyData {
     foo: usize,
     bar: Option<String>,
 }
+
+#[derive(Debug, Default, Clone)]
+struct DataHandler;
+
+#[derive(Debug, Extract, Response)]
+struct UuidWrapper(Uuid);
 
 impl_web! {
     impl HelloWorld {
@@ -39,6 +54,23 @@ impl_web! {
             })
         }
     }
+
+    impl DataHandler {
+        #[get("/board/:id")]
+        #[content_type("json")]
+        fn get(&self, id: String) -> Result<Board, ()> {
+            let id = Uuid::parse_str(&id).map_err(|e| {
+                println!("{:?}", e);
+            })?;
+            Board::get(&id).ok_or(())
+        }
+
+        #[post("/board")]
+        #[content_type("json")]
+        fn post(&self) -> Result<UuidWrapper, ()> {
+            Ok(UuidWrapper(Board::post()))
+        }
+    }
 }
 
 pub fn main() {
@@ -46,7 +78,7 @@ pub fn main() {
     println!("Listening on http://{}", addr);
 
     ServiceBuilder::new()
-        .resource(HelloWorld)
+        .resource(DataHandler)
         .run(&addr)
         .unwrap();
 }
