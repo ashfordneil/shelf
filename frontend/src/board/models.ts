@@ -1,6 +1,7 @@
 import { Tile } from "../tile/models";
 
 export interface RawBoard {
+    title: string;
     tiles: string[];
 }
 
