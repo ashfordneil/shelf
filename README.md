@@ -11,6 +11,9 @@ Build for release with `yarn build`
 Run with `cargo run`
 Build for release with `cargo build --release`
 
+# Testing
+Navigate to localhost:8080/
+
 # API
 `/board` => POST
 returns a UUID representing a newly created empty board
