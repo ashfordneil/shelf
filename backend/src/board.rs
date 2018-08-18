@@ -7,6 +7,9 @@ use uuid::Uuid;
 
 use auth::{Auth, AuthKey};
 
+use std::io::prelude::*;
+use std::fs::File;
+
 #[derive(Clone, Debug, Response, Extract, PartialEq, Serialize, Deserialize)]
 pub struct Board {
     pub title: String,
@@ -21,7 +24,18 @@ pub struct JwtClaims {
 
 impl Board {
     fn board_storage() -> Mvdb<HashMap<Uuid, Board>> {
-        let file = Path::new("target/database/board.json"); 
+
+        let path = "./target/board.json";
+
+        let file = Path::new(path);
+
+        if !file.exists() {
+            let mut f = File::create(path).unwrap();
+            f.write_all(b"{}").unwrap();
+            f.sync_all().unwrap();
+            println!("Created: {:?}", path);
+        }
+
         let STORAGE: Mvdb<HashMap<Uuid, Board>> = Mvdb::from_file(&file)
             .expect("File does not exist, or schema mismatch");
         STORAGE.clone()

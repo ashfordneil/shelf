@@ -6,6 +6,9 @@ use std::path::Path;
 use uuid::Uuid;
 use auth::{Auth, AuthKey};
 
+use std::io::prelude::*;
+use std::fs::File;
+
 #[derive(Default, Clone, Debug, Response, Extract, Serialize, Deserialize)]
 pub struct Tile {
     pub title: String,
@@ -19,7 +22,17 @@ pub struct JwtClaims {
 
 impl Tile {
     fn tile_storage() -> Mvdb<HashMap<Uuid, Tile>> {
-        let file = Path::new("target/database/tile.json");
+        let path = "./target/tile.json";
+
+        let file = Path::new(path);
+
+        if !file.exists() {
+            let mut f = File::create(path).unwrap();
+            f.write_all(b"{}").unwrap();
+            f.sync_all().unwrap();
+            println!("Created: {:?}", path);
+        }
+
         let STORAGE: Mvdb<HashMap<Uuid, Tile>> = Mvdb::from_file(&file)
              .expect("File does not exist, or schema mismatch");
          STORAGE.clone()

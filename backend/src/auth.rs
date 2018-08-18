@@ -4,6 +4,9 @@ use std::path::Path;
 use mvdb::Mvdb;
 use uuid::Uuid;
 
+use std::io::prelude::*;
+use std::fs::File;
+
 use jwt::{encode, Header};
 
 #[derive(Default, Clone, Debug)]
@@ -24,7 +27,17 @@ pub struct JwtClaims {
 }
 impl Auth {
     fn storage() -> Mvdb<HashMap<AuthKey, JwtString>> {
-        let file = Path::new("target/database/auth.json");
+        let path = "./target/auth.json";
+
+        let file = Path::new(path);
+
+        if !file.exists() {
+            let mut f = File::create(path).unwrap();
+            f.write_all(b"{}").unwrap();
+            f.sync_all().unwrap();
+            println!("Created: {:?}", path);
+        }
+
         let STORAGE: Mvdb<HashMap<AuthKey,JwtString>> = Mvdb::from_file(&file)
             .expect("File does not exist, or schema mismatch");
         STORAGE.clone()
