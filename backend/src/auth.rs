@@ -39,14 +39,14 @@ impl Auth {
     }
 
     pub fn lock(key: AuthKey) -> Result<String, ()> {
-        if (!Auth::is_locked(key)) {
+        if !Auth::is_locked(key) {
             let store = Auth::storage   ();
             let mut store = store.lock().unwrap();
 
 
-            let claims = JwtClaims {
-                key: key
-            };
+            // let claims = JwtClaims {
+            //     key: key
+            // };
 
             let claims = key.clone();
             println!("hi");
@@ -67,6 +67,30 @@ impl Auth {
         }
     }
 
+    pub fn unlock(key: AuthKey, jwt: String) -> Result<(), ()> {
+        let store = Auth::storage();
+        let stored_jwt = {
+            let store = store.lock().unwrap();
+            let entry = match store.get(&key) {
+                Some(val) => Some(val.clone()),
+                None => None
+            };
+            entry
+        };
+        if let Some(stored_jwt) = stored_jwt {
+            if jwt.eq(&stored_jwt) {
+                let store = Auth::storage();
+                let mut store = store.lock().unwrap();
+                store.remove(&key);
+                return Ok(());
+            }
+            else {
+                return Err(());
+            }
+        }
+        Err(())
+    }
+
 }
 
 #[cfg(test)]
@@ -78,7 +102,33 @@ mod test {
         // let uuid = "cbeba719-29dd-4758-9b58-1d9e3b2894d6";
         let uuid = Uuid::new_v4();
         let key = AuthKey::Board(uuid);
+        let _jwt = Auth::lock(key);
+        assert!(Auth::is_locked(key));
+    }
+
+    #[test]
+    fn test_unlock() {
+        let uuid = Uuid::new_v4();
+        let key = AuthKey::Board(uuid);
         let jwt = Auth::lock(key);
-        println!("{:?}", jwt.unwrap());
+        assert!(Auth::is_locked(key));
+        let result = Auth::unlock(key, jwt.unwrap());
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_unlock_jwt() {
+        let key1 = AuthKey::Board(Uuid::new_v4());
+        assert!(!Auth::is_locked(key1));
+        let jwt1 = Auth::lock(key1);
+
+        let key2 = AuthKey::Board(Uuid::new_v4());
+        assert!(!Auth::is_locked(key2));
+        let jwt2 = Auth::lock(key2);
+
+        assert!(Auth::is_locked(key1));
+        assert!(Auth::is_locked(key2));
+        assert!(!Auth::unlock(key1, jwt2.unwrap()).is_ok());
+        assert!(Auth::unlock(key1, jwt1.unwrap()).is_ok());
     }
 }
