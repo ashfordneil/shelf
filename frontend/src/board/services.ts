@@ -33,5 +33,6 @@ export const checkout = async (id: string): Promise<string> => {
 export const checkin = async (id: string, jwt: string, body: Board): Promise<void> => {
     const config = JSON.parse(JSON.stringify(axiosConfig)) as typeof axiosConfig;
     config.headers["auth"] = jwt;
-    await axios.post(`/board/${id}`, body, axiosConfig);
+    console.log(config);
+    await axios.patch(`/board/${id}`, body, config);
 }
