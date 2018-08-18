@@ -25,6 +25,11 @@ impl_web! {
             Ok("ok".to_string())
         }
 
+        #[get("/one/:param")]
+        fn path_str(&self, param: String) -> Result<String, ()> {
+            Ok(format!("We received: {} in the path", param))
+        }
+
         #[get("/data")]
         #[content_type("json")]
         fn greet(&self) -> Result<MyData, ()> {
