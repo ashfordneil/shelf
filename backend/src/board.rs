@@ -77,6 +77,11 @@ impl Board {
             entry
         };
         if jwt.eq(&stored_jwt) {
+            let store = Board::board_storage();
+            let mut store = store.lock().unwrap();
+            if let Some(x) = store.get_mut(board_id) {
+                *x = board;
+            }
             let mut authstore = authstore.lock().unwrap();
             authstore.remove(board_id);
         }

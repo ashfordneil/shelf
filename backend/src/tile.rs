@@ -76,6 +76,11 @@ impl Tile {
             entry
         };
         if jwt.eq(&stored_jwt) {
+            let store = Tile::tile_storage();
+            let mut store = store.lock().unwrap();
+            if let Some(x) = store.get_mut(tile_id) {
+                *x = tile;
+            }
             let mut authstore = authstore.lock().unwrap();
             authstore.remove(tile_id);
         }

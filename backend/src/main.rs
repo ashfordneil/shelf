@@ -184,7 +184,7 @@ mod test {
     #[test]
     fn test_correct_jwt() {
         let board_id1 = Board::post();
-        let jwt1 = Board::checkout(&board_id1).unwrap();
+        let _jwt1 = Board::checkout(&board_id1).unwrap();
 
         let board_id2 = Board::post();
         let jwt2 = Board::checkout(&board_id2).unwrap();
