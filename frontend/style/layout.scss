@@ -16,21 +16,19 @@ body {
     display: flex;
     flex-flow: column;
     align-items: stretch;
+    max-height: 100%;
+}
+
+h1 {
+    padding-left: 0.5em;
 }
 
 .spacey {
     flex: 1;
 }
 
-p{
-    font-family: 'Roboto', sans-serif;
-}
-
-h1{
-    font-family: 'Montserrat', sans-serif;
-}
-
 .board {
+    overflow-y: scroll;
     display: grid;
     padding: 1em;
 
@@ -62,4 +60,8 @@ h1{
 
     @media #{$wider-screens} {
     }
+}
+
+.footer {
+    padding-left: 0.5em;
 }
