@@ -38,10 +38,10 @@ impl_web! {
             Board::get(&id).ok_or(())
         }
 
-        #[post("/board/:name")]
+        #[post("/board")]
         #[content_type("json")]
-        fn post_board(&self, name: String) -> Result<UuidWrapper, ()> {
-            Ok(UuidWrapper(Board::post(name)))
+        fn post_board(&self, body: Board) -> Result<UuidWrapper, ()> {
+            Ok(UuidWrapper(Board::post(body)))
         }
 
         #[post("/board/:id/edit")]
@@ -124,7 +124,7 @@ mod test {
 
     #[test]
     fn test_update_board() {
-        let board_id = Board::post("Hello".into());
+        let board_id = Board::post(Board {title: "Hello".into(), tiles: vec![]});
 
         let jwt = Board::checkout(&board_id).unwrap();
 
@@ -150,7 +150,7 @@ mod test {
 
     #[test]
     fn test_lock_board() {
-        let board_id = Board::post("Hello".into());
+        let board_id = Board::post(Board {title: "Hello".into(), tiles: vec![]});
 
         assert!(Board::checkout(&board_id).is_some());
         assert!(Board::checkout(&board_id).is_none());
@@ -160,7 +160,7 @@ mod test {
 
     #[test]
     fn test_lock_removed() {
-        let board_id = Board::post("Hello".into());
+        let board_id = Board::post(Board {title: "Hello".into(), tiles: vec![]});
 
         let jwt = Board::checkout(&board_id).unwrap();
 
@@ -189,10 +189,10 @@ mod test {
 
     #[test]
     fn test_correct_jwt() {
-        let board_id1 = Board::post("Hello".into());
+        let board_id1 = Board::post(Board {title: "Hello".into(), tiles: vec![]});
         let _jwt1 = Board::checkout(&board_id1).unwrap();
 
-        let board_id2 = Board::post("Hello".into());
+        let board_id2 = Board::post(Board {title: "Hello".into(), tiles: vec![]});
         let jwt2 = Board::checkout(&board_id2).unwrap();
 
         let tile_id = Tile::post(Tile {

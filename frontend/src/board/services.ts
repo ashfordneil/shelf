@@ -17,7 +17,11 @@ export const get = async (id: string): Promise<Board | null> => {
 }
 
 export const post = async (title: string): Promise<string> => {
-    const output = await axios.post(`/board/${title}`, axiosConfig);
+    const newBoard: Board = {
+        title,
+        tiles: []
+    };
+    const output = await axios.post(`/board`, newBoard, axiosConfig);
     return output.data as string;
 }
 
