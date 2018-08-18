@@ -23,6 +23,15 @@ h1 {
     padding-left: 0.5em;
 }
 
+h2 {
+    margin: 0;
+    padding: 0.5em;
+}
+
+p {
+    padding-left: 0.5em;
+}
+
 .spacey {
     flex: 1;
 }
@@ -49,8 +58,10 @@ h1 {
 }
 
 .tile {
-    background-color: lightblue;
     height: 15em;
+    h2 {
+        color: white;
+    }
 
     @media #{$handheld} {
     }
@@ -60,8 +71,4 @@ h1 {
 
     @media #{$wider-screens} {
     }
-}
-
-.footer {
-    padding-left: 0.5em;
 }

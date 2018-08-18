@@ -1,37 +1,37 @@
 .board {
-    .tile:nth-child(5n+1) {
+    .tile:nth-child(5n+1) > h2 {
         background-color: #f44336;
     }
-    .tile:nth-child(5n+1):hover {
+    .tile:nth-child(5n+1):hover > h2 {
         background-color: #e57373;
     }
 
-    .tile:nth-child(5n+2) {
+    .tile:nth-child(5n+2) > h2 {
         background-color: #9C27B0;
     }
-    .tile:nth-child(5n+2):hover {
+    .tile:nth-child(5n+2):hover > h2 {
         background-color: #BA68C8;
     }
 
-    .tile:nth-child(5n+3) {
+    .tile:nth-child(5n+3) > h2 {
         background-color: #03A9F4;
     }
-    .tile:nth-child(5n+3):hover {
+    .tile:nth-child(5n+3):hover > h2 {
         background-color: #4FC3F7;
     }
 
-    .tile:nth-child(5n+4) {
+    .tile:nth-child(5n+4) > h2 {
         background-color: #8BC34A;
     }
-    .tile:nth-child(5n+4):hover {
+    .tile:nth-child(5n+4):hover > h2 {
         background-color: #AED581;
     }
 
-    .tile:nth-child(5n+5) {
-        background-color: #FFC107;
+    .tile:nth-child(5n+5) > h2 {
+        background-color: #E91E68;
     }
-    .tile:nth-child(5n+5):hover {
-        background-color: #FFD54F;
+    .tile:nth-child(5n+5):hover > h2 {
+        background-color: #F06292;
     }
 }
 
@@ -40,6 +40,5 @@
 }
 
 .tile {
-    padding: 1em;
     box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.24);
 }
