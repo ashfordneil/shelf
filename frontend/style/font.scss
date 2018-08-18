@@ -3,8 +3,84 @@
 }
 
 h1{
-  color: rgba(255,255,255,0.9);
-  font-size: 46px;
-  font-weight: 500;
-  line-height: 58px;
+    color: rgba(255,255,255,0.9);
+    font-size: 46px;
+    font-weight: 500;
+    line-height: 58px;
+    margin-left: 1.5em;
+}
+
+.header h1{
+    display: inline-block;
+    border-bottom: 1px solid rgba(255,255,255,0.5);
+    width: 298px;
+}
+
+h2 {
+    margin: 0;
+    padding: 0.5em;
+}
+
+a{
+    color: #FFFFFF;
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: normal;
+    font-size: 20px;
+    display: inline-block;
+    border-bottom: 1px solid rgba(255,255,255,0.5);
+}
+
+a:hover {
+    border-bottom: 1px solid rgba(255,255,255,0.9);
+    cursor: pointer;
+}
+
+.addButton h1{
+    color: #032B43;
+    font-size: 48px;
+    position: relative;
+    font-weight: 900;
+    text-align: center;
+    margin: auto;
+}
+
+.delButton h1{
+    color: #032B43;
+    font-size: 28px;
+    position: relative;
+    line-height: 20px;
+    font-weight: 900;
+    text-align: center;
+    margin: auto;
+}
+
+.footer h2{
+    margin-left: 1.5em;
+  	height: 52px;
+    width: 119px;
+    color: #FFFFFF;
+    font-size: 38px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    line-height: 52px;
+    float: left;
+}
+
+.tile h2{
+    color: #FFFFFF;
+    font-size: 32px;
+    font-weight: 1000;
+    line-height: 43px;
+    padding-left: 0.5em;
+}
+
+.tile p{
+  	height: 124px;
+    width: 292px;
+    color: #193E5C;
+    font-size: 22px;
+    line-height: 30px;
+    width: 90%;
+    padding: 0.5em;
 }
