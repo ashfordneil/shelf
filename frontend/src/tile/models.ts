@@ -1,4 +1,5 @@
 export interface NewTile {
+    title: string;
     content: string;
 }
 

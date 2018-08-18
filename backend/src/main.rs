@@ -6,6 +6,7 @@ extern crate tokio;
 extern crate tower_web;
 extern crate uuid;
 extern crate jsonwebtoken as jwt;
+extern crate serde;
 
 use tower_web::ServiceBuilder;
 
@@ -15,6 +16,7 @@ mod static_file;
 
 mod board;
 mod tile;
+mod auth;
 
 use board::Board;
 use tile::Tile;
@@ -127,12 +129,14 @@ mod test {
         let jwt = Board::checkout(&board_id).unwrap();
 
         let tile = Tile {
+            title: "New tile".to_string(),
             content: "heya".to_string()
         };
 
         let tile_id = Tile::post(tile);
 
         let board = Board {
+            title: "New Board".to_string(),
             tiles: vec![tile_id]
         };
 
@@ -164,12 +168,14 @@ mod test {
         assert!(Board::checkout(&board_id).is_none());
 
         let tile = Tile {
+            title: "New tile".to_string(),
             content: "heya".to_string()
         };
 
         let tile_id = Tile::post(tile);
 
         let board = Board {
+            title: "New Board".to_string(),
             tiles: vec![tile_id]
         };
 
@@ -190,10 +196,12 @@ mod test {
         let jwt2 = Board::checkout(&board_id2).unwrap();
 
         let tile_id = Tile::post(Tile {
+            title: "New tile".to_string(),
             content: "heya".to_string()
         });
 
         let board = Board {
+            title: "New Board".to_string(),
             tiles: vec![tile_id]
         };
 

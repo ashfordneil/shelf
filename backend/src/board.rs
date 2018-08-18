@@ -8,6 +8,7 @@ use jwt::{encode, Header};
 
 #[derive(Default, Clone, Debug, Response, Extract, PartialEq)]
 pub struct Board {
+    pub title: String,
     /// All of the tiles in the board
     pub tiles: Vec<Uuid>,
 }

@@ -8,6 +8,7 @@ use jwt::{encode, Header};
 
 #[derive(Default, Clone, Debug, Response, Extract)]
 pub struct Tile {
+    pub title: String,
     pub content: String,
 }
 
