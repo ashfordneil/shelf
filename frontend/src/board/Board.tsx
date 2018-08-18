@@ -16,14 +16,16 @@ export const Board = (props: Props): Observable<React.JSXElement> {
         try {
             const board = await get(props.id);
             const tiles = board.tiles.map(tile =>
-                <div id={tile.id} className="tile">
+                <div key={tile.id} className="tile">
                     <h2>{tile.title}</h2>
                     <p>{tile.content}</p>
                 </div>
             );
             input.next(
                 <React.Fragment>
-                    <h1>{board.title}</h1>
+                    <div className="header">
+                        <h1>{board.title}</h1>
+                    </div>
                     <div className="board">
                         {tiles}
                     </div>

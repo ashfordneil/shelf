@@ -12,7 +12,17 @@ import * as tile from "./tile/services";
 const App = (): Observable<React.JSXElement> {
     const board = NewBoard();
 
-    const stream = board;
+    const stream = board.pipe(
+        map(board =>
+            <React.Fragment>
+                {board}
+                <div className="spacey" />
+                <div className="footer">
+                    <h3>Footer</h3>
+                </div>
+            </React.Fragment>
+        )
+    );
 
     return stream;
 }
