@@ -16,6 +16,10 @@ h1{
     width: 298px;
 }
 
+.fa-plus{
+    font-size: 25px;
+}
+
 h2 {
     margin: 0;
     padding: 0.5em;
@@ -40,12 +44,23 @@ a:hover {
     color: #FFFFFF;
     font-size: 38px;
     font-weight: 500;
+    letter-spacing: 10px;
+    line-height: 52px;
+    margin-left: 1.5em;
+}
+
+.addButton h2{
+    color: #FFFFFF;
+    font-size: 38px;
+    font-weight: 500;
     letter-spacing: 1.5px;
     line-height: 52px;
+    margin-left: 0;
 }
 
 .tile h2 {
     color: #FFFFFF;
+    width: auto;
     font-size: 32px;
     padding-left: 0.5em;
 }
@@ -54,4 +69,10 @@ a:hover {
     color: #193E5C;
     font-size: 22px;
     padding: 0.5em;
+    margin-top: 0.25em;
+    margin-right: 0.25em;
+    overflow-wrap: break-word;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overflow-y: initial;
 }
