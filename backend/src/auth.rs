@@ -40,7 +40,7 @@ impl Auth {
 
     pub fn lock(key: AuthKey) -> Result<String, ()> {
         if !Auth::is_locked(key) {
-            let store = Auth::storage   ();
+            let store = Auth::storage();
             let mut store = store.lock().unwrap();
 
 
@@ -67,7 +67,7 @@ impl Auth {
         }
     }
 
-    pub fn unlock(key: AuthKey, jwt: String) -> Result<(), ()> {
+    pub fn is_valid(key: AuthKey, jwt: String) -> bool {
         let store = Auth::storage();
         let stored_jwt = {
             let store = store.lock().unwrap();
@@ -79,16 +79,22 @@ impl Auth {
         };
         if let Some(stored_jwt) = stored_jwt {
             if jwt.eq(&stored_jwt) {
-                let store = Auth::storage();
-                let mut store = store.lock().unwrap();
-                store.remove(&key);
-                return Ok(());
-            }
-            else {
-                return Err(());
+                return true;
             }
         }
-        Err(())
+        return false;
+    }
+
+    pub fn unlock(key: AuthKey, jwt: String) -> Result<(), ()> {
+        if Auth::is_valid(key, jwt) {
+            let store = Auth::storage();
+            let mut store = store.lock().unwrap();
+            store.remove(&key);
+            return Ok(());
+        }
+        else {
+            return Err(());
+        }
     }
 
 }
