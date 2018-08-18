@@ -3,6 +3,7 @@ extern crate lazy_static;
 #[macro_use]
 extern crate tower_web;
 extern crate uuid;
+extern crate jsonwebtoken as jwt;
 
 use tower_web::ServiceBuilder;
 
@@ -42,10 +43,7 @@ impl_web! {
     //         Ok("ok".to_string())
     //     }
 
-    //     #[get("/one/:param")]
-    //     fn path_str(&self, param: String) -> Result<String, ()> {
-    //         Ok(format!("We received: {} in the path", param))
-    //     }
+
 
     //     #[get("/data")]
     //     #[content_type("json")]
@@ -92,6 +90,14 @@ impl_web! {
         #[content_type("json")]
         fn post_board(&self) -> Result<UuidWrapper, ()> {
             Ok(UuidWrapper(Board::post()))
+        }
+
+        #[post("/board/:id")]
+        fn checkout_board(&self, id: String) -> Result<String, ()> {
+            let id = Uuid::parse_str(&id).map_err(|e| {
+                println!("{:?}", e);
+            })?;
+            Board::checkout(&id).ok_or(())
         }
 
         #[post("/tile")]
