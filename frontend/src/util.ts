@@ -1,12 +1,12 @@
-import { Observable, Subject } from "rxjs";
+import { Observable, BehaviorSubject, Subject } from "rxjs";
 
 export interface Pipe<T> {
     input: Subject<T>;
     output: Observable<T>;
 }
 
-export const create = <T>(): Pipe<T> => {
-    const pipe = new Subject<T>();
+export const create = <T>(t: T): Pipe<T> => {
+    const pipe = new BehaviorSubject<T>(t);
     const input = pipe;
     const output = pipe.asObservable();
 

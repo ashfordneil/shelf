@@ -1,47 +1,27 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Observable } from "rxjs";
-import { from } from "rxjs";
+import { map } from "rxjs/operators";
 
 import { create } from "./util";
 
+import { Board } from "./board/Board";
 import * as tile from "./tile/services";
 
 const App = (): Observable<React.JSXElement> {
     const title = <h1>Title of Board</h1>;
-    const board = <div className="board">
-        <div className="tile">
-            <h2>Title</h2>
-            <p>Hello</p>
-        </div>
-        <div className="tile">
-            <h2>Title</h2>
-            <p>World</p>
-        </div>
-        <div className="tile">
-            <h2>Title</h2>
-            <p>World</p>
-        </div>
-        <div className="tile">
-            <h2>Title</h2>
-            <p>World</p>
-        </div>
-        <div className="tile">
-            <h2>Title</h2>
-            <p>World</p>
-        </div>
-        <div className="tile">
-            <h2>Title</h2>
-            <p>World</p>
-        </div>
-    </div>;
+    const board = Board({ id: "hello" });
 
-    const first = <React.Fragment>
-        {title}
-        {board}
-    </React.Fragment>;
+    const stream = board.pipe(
+        map(board => 
+            <React.Fragment>
+                {title}
+                {board}
+            </React.Fragment>
+        ),
+    );
 
-    return from([first]);
+    return stream;
 }
 
 const main = () => {
