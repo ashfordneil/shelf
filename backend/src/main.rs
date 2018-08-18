@@ -9,8 +9,10 @@ use tower_web::ServiceBuilder;
 use uuid::Uuid;
 
 mod board;
+mod tile;
 
 use board::Board;
+use tile::Tile;
 
 #[derive(Clone, Debug)]
 struct HelloWorld;
@@ -79,7 +81,7 @@ impl_web! {
     impl DataHandler {
         #[get("/board/:id")]
         #[content_type("json")]
-        fn get(&self, id: String) -> Result<Board, ()> {
+        fn get_board(&self, id: String) -> Result<Board, ()> {
             let id = Uuid::parse_str(&id).map_err(|e| {
                 println!("{:?}", e);
             })?;
@@ -88,8 +90,14 @@ impl_web! {
 
         #[post("/board")]
         #[content_type("json")]
-        fn post(&self) -> Result<UuidWrapper, ()> {
+        fn post_board(&self) -> Result<UuidWrapper, ()> {
             Ok(UuidWrapper(Board::post()))
+        }
+
+        #[post("/tile")]
+        #[content_type("json")]
+        fn post_tile(&self, body: Tile) -> Result<UuidWrapper, ()> {
+            Ok(UuidWrapper(Tile::post(body)))
         }
     }
 }
