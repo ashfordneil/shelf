@@ -1,6 +1,6 @@
 extern crate http;
 #[macro_use]
-extern crate lazy_static;
+extern crate mvdb;
 extern crate tokio;
 #[macro_use]
 extern crate tower_web;

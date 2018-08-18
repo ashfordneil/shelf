@@ -1,12 +1,12 @@
 //! Module for doing crud operations on the Tile itself.
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-
+use mvdb::Mvdb;
+use std::path::Path;
 use uuid::Uuid;
-
 use auth::{Auth, AuthKey};
 
-#[derive(Default, Clone, Debug, Response, Extract)]
+#[derive(Default, Clone, Debug, Response, Extract, Serialize, Deserialize)]
 pub struct Tile {
     pub title: String,
     pub content: String,
@@ -18,24 +18,25 @@ pub struct JwtClaims {
 }
 
 impl Tile {
-    fn tile_storage() -> Arc<Mutex<HashMap<Uuid, Tile>>> {
-        lazy_static! {
-            static ref STORAGE: Arc<Mutex<HashMap<Uuid, Tile>>> = Default::default();
-        }
-
-        STORAGE.clone()
+    fn tile_storage() -> Mvdb<HashMap<Uuid, Tile>> {
+        let file = Path::new("target/database/tile.json");
+        let STORAGE: Mvdb<HashMap<Uuid, Tile>> = Mvdb::from_file(&file)
+             .expect("File does not exist, or schema mismatch");
+         STORAGE.clone()
     }
 
     /// Get the internals of a Tile
     pub fn get(id: &Uuid) -> Option<Tile> {
         let store = Tile::tile_storage();
-        let store = store.lock().unwrap();
+        let store = store.access(|db| db.clone())
+            .expect("Failed to access tile file");
         store.get(id).cloned()
     }
 
     fn exists(tile_id: &Uuid) -> bool {
-        let store = Tile::tile_storage();
-        let store = store.lock().unwrap();
+        let store = Tile::tile_storage(); 
+        let store = store.access(|db| db.clone())
+            .expect("Failed to access tile file");
         store.get(tile_id).cloned().is_some()
     }
 
@@ -58,7 +59,8 @@ impl Tile {
 
         if Auth::is_valid(key, jwt.clone()) {
             let store = Tile::tile_storage();
-            let mut store = store.lock().unwrap();
+        let mut store = store.access(|db| db.clone())
+            .expect("Failed to access tile file");
             if let Some(x) = store.get_mut(tile_id) {
                 *x = tile;
             }
@@ -73,7 +75,8 @@ impl Tile {
     /// Create a new Tile, and return a reference to it.
     pub fn post(new_tile: Tile) -> Uuid {
         let store = Tile::tile_storage();
-        let mut store = store.lock().unwrap();
+        let mut store = store.access(|db| db.clone())
+            .expect("Failed to access tile file");
         let uuid = loop {
             let uuid = Uuid::new_v4();
             if !store.contains_key(&uuid) {
