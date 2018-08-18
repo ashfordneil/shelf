@@ -1,18 +1,13 @@
 //! Module for doing crud operations on the board itself.
 use std::collections::HashMap;
-use std::path::Path;
-use mvdb::Mvdb;
-use uuid::Uuid;
+use std::sync::{Arc, Mutex};
 
-use std::io::prelude::*;
-use std::fs::File;
+use uuid::Uuid;
 
 use jwt::{encode, Header};
 
 #[derive(Default, Clone, Debug)]
 pub struct Auth;
-
-// TODO: Fix hashing for file storage
 
 #[derive(Debug, PartialEq, Eq, Hash, Serialize, Deserialize, Clone, Copy)]
 #[serde(tag = "type", content = "id")]
@@ -27,48 +22,38 @@ type JwtString = String;
 pub struct JwtClaims {
     key: AuthKey
 }
+
 impl Auth {
-    fn storage() -> Mvdb<HashMap<AuthKey, JwtString>> {
-        let path = "./target/auth.json";
-
-        let file = Path::new(path);
-
-        if !file.exists() {
-            let mut f = File::create(path).unwrap();
-            f.write_all(b"{}").unwrap();
-            f.sync_all().unwrap();
-            println!("Created: {:?}", path);
+    fn storage() -> Arc<Mutex<HashMap<AuthKey, JwtString>>> {
+        lazy_static! {
+            static ref STORAGE: Arc<Mutex<HashMap<AuthKey, JwtString>>> = Default::default();
         }
 
-        let STORAGE: Mvdb<HashMap<AuthKey,JwtString>> = Mvdb::from_file(&file)
-            .expect("File does not exist, or schema mismatch");
         STORAGE.clone()
     }
 
     pub fn is_locked(key: AuthKey) -> bool {
         let store = Auth::storage();
-        let store = store.access(|db| db.clone())
-            .expect("Could not read Auth file");
+        let store = store.lock().unwrap();
         store.contains_key(&key)
-     }
+    }
 
     pub fn lock(key: AuthKey) -> Result<String, ()> {
         if !Auth::is_locked(key) {
             let store = Auth::storage();
+            let mut store = store.lock().unwrap();
+
+
+            // let claims = JwtClaims {
+            //     key: key
+            // };
 
             let claims = key.clone();
+            println!("hi");
             let new_jwt = encode(&Header::default(), &claims, "secret".as_ref());
-
-
-
             if let Ok(new_jwt) = new_jwt {
-
-                store.access_mut(|store_from_disk| 
-                {
-                    store_from_disk.insert(key.clone(), new_jwt.to_string());
-                })
-                .expect("Failed to access file");
-
+                store.insert(key.clone(), new_jwt.to_string());
+                println!("{:?}", new_jwt.to_string());
                 Ok(new_jwt.to_string())
             }
             else {
@@ -81,15 +66,12 @@ impl Auth {
             Err(())
         }
     }
-// Checks if jwt token matches key
+
     pub fn is_valid(key: AuthKey, jwt: String) -> bool {
         let store = Auth::storage();
-         let mut store_from_disk = store.access(|db| db.clone())
-             .expect("Failed to access file");
         let stored_jwt = {
-            let store = store.access(|db| db.clone())
-        .expect("Failed to access file");
-            let entry = match store_from_disk.get(&key) {
+            let store = store.lock().unwrap();
+            let entry = match store.get(&key) {
                 Some(val) => Some(val.clone()),
                 None => None
             };
@@ -106,11 +88,8 @@ impl Auth {
     pub fn unlock(key: AuthKey, jwt: String) -> Result<(), ()> {
         if Auth::is_valid(key, jwt) {
             let store = Auth::storage();
-            store.access_mut(|store| {
-                store.remove(&key);
-            })
-            .expect("Failed to access file");
-            
+            let mut store = store.lock().unwrap();
+            store.remove(&key);
             return Ok(());
         }
         else {
