@@ -6,6 +6,7 @@ extern crate tokio;
 extern crate tower_web;
 extern crate uuid;
 extern crate jsonwebtoken as jwt;
+extern crate serde;
 
 use tower_web::ServiceBuilder;
 
@@ -15,6 +16,7 @@ mod static_file;
 
 mod board;
 mod tile;
+mod auth;
 
 use board::Board;
 use tile::Tile;
