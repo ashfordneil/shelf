@@ -11,3 +11,4 @@ uuid = { version = "0.6.5", features = ["serde", "v4"] }
 lazy_static = "1.1.0"
 http = "0.1.10"
 tokio = "0.1.7"
+jsonwebtoken = "5.0.0"

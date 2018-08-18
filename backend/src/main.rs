@@ -5,6 +5,7 @@ extern crate tokio;
 #[macro_use]
 extern crate tower_web;
 extern crate uuid;
+extern crate jsonwebtoken as jwt;
 
 use tower_web::ServiceBuilder;
 
@@ -39,6 +40,30 @@ impl_web! {
         #[content_type("json")]
         fn post_board(&self) -> Result<UuidWrapper, ()> {
             Ok(UuidWrapper(Board::post()))
+        }
+
+        #[post("/board/:id")]
+        fn checkout_board(&self, id: String) -> Result<String, ()> {
+            let id = Uuid::parse_str(&id).map_err(|e| {
+                println!("{:?}", e);
+            })?;
+            Board::checkout(&id).ok_or(())
+        }
+
+
+        #[patch("/board/:id")]
+        fn checkin_board(&self, id: String, jwt: String, body: Board) -> Result<String, ()> {
+            let id = Uuid::parse_str(&id).map_err(|e| {
+                println!("{:?}", e);
+            })?;
+            // let jwt = "".to_string();
+            let resp = Board::checkin(&id, jwt, body);
+            if let Ok(_) = resp {
+                Ok("ok".to_string().to_string())
+            }
+            else {
+                Err(())
+            }
         }
 
         #[post("/tile")]
