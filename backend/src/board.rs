@@ -9,7 +9,7 @@ use jwt::{encode, decode, Header, Algorithm, Validation};
 #[derive(Default, Clone, Debug, Response, Extract)]
 pub struct Board {
     /// All of the tiles in the board
-    tiles: Vec<Uuid>,
+    pub tiles: Vec<Uuid>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

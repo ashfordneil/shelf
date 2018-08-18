@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 #[derive(Default, Clone, Debug, Response, Extract)]
 pub struct Tile {
-    content: String,
+    pub content: String,
 }
 
 impl Tile {
