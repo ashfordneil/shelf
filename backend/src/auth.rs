@@ -7,7 +7,7 @@ use std::path::Path;
 
 use uuid::Uuid;
 
-use jwt::{encode, Header};
+use jwt::{encode, Header, Validation, verify, decode};
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -31,7 +31,7 @@ type TTL = u64;
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
 struct JWTClaims {
     key: AuthKey,
-    ttl: TTL,
+    exp: TTL,
 }
 
 type StoreThingo = (bool, Uuid);
@@ -91,8 +91,22 @@ impl Auth {
 
     pub fn is_locked(key: AuthKey) -> bool {
         let store = Auth::storage();
-        store.access(|db| db.contains_key(&key))
-            .expect("Could not read Auth file")
+        let inthere = store.access(|db| db.contains_key(&key))
+            .expect("Could not read Auth file");
+        if (inthere) {
+            let store = store.access(|db| db.clone())
+                .expect("Could not read Board file");
+            let val = store.get(&key);
+            let mut validation = Validation {leeway: 5, validate_exp: true, ..Default::default()};
+            if !decode::<JWTClaims>(val.unwrap(), "secret".as_ref(), &validation).is_ok() {
+                Auth::unlock(key, val.unwrap().to_string());
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+        inthere
     }
 
     pub fn lock(key: AuthKey) -> Result<String, String> {
@@ -106,10 +120,16 @@ impl Auth {
             let in_ms = since_the_epoch.as_secs() * 1000 +
                 since_the_epoch.subsec_nanos() as u64 / 1_000_000;
 
+            let in_ms = in_ms / 1000;
+
+            let addtime = 2 * 60;
+
+            let in_ms = in_ms + addtime;
+
             // let claims = key.clone();
             let claims = JWTClaims {
                 key,
-                ttl: in_ms
+                exp: in_ms
             };
 
             let new_jwt = encode(&Header::default(), &claims, "secret".as_ref());
