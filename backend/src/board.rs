@@ -17,11 +17,6 @@ pub struct Board {
     pub tiles: Vec<Uuid>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct JwtClaims {
-    board_id: Uuid,
-}
-
 lazy_static! {
     static ref ROOT_PATH: String = env::var("STORAGE").unwrap_or("./target".into());
 }

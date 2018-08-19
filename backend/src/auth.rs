@@ -7,7 +7,9 @@ use std::path::Path;
 
 use uuid::Uuid;
 
-use jwt::{encode, Header};
+use jwt::{encode, Header, Validation, verify, decode};
+
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde_json;
@@ -23,12 +25,23 @@ pub enum AuthKey {
     Tile(Uuid),
 }
 
+
+type TTL = u64;
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
+struct JWTClaims {
+    key: AuthKey,
+    exp: TTL,
+}
+
+type StoreThingo = (bool, Uuid);
+
 impl Serialize for AuthKey {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         use serde::ser::Error;
-        let intermediate = match self {
-            AuthKey::Board(x) => (true, x),
-            AuthKey::Tile(x) => (false, x),
+        let intermediate: StoreThingo = match self {
+            AuthKey::Board(x) => (true, *x),
+            AuthKey::Tile(x) => (false, *x),
         };
         let output = serde_json::to_string(&intermediate).map_err(S::Error::custom)?;
         output.serialize(serializer)
@@ -39,7 +52,7 @@ impl<'de> Deserialize<'de> for AuthKey {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         use serde::de::Error;
         let string = String::deserialize(deserializer)?;
-        let intermediate = serde_json::from_str(&string).map_err(D::Error::custom)?;
+        let intermediate: StoreThingo = serde_json::from_str(&string).map_err(D::Error::custom)?;
         let output = match intermediate {
             (true, x) => AuthKey::Board(x),
             (false, x) => AuthKey::Tile(x),
@@ -54,10 +67,8 @@ lazy_static! {
     static ref ROOT_PATH: String = env::var("STORAGE").unwrap_or("./target".into());
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct JwtClaims {
-    key: AuthKey
-}
+
+
 impl Auth {
     fn storage() -> Mvdb<HashMap<AuthKey, JwtString>> {
         lazy_static! {
@@ -80,15 +91,47 @@ impl Auth {
 
     pub fn is_locked(key: AuthKey) -> bool {
         let store = Auth::storage();
-        store.access(|db| db.contains_key(&key))
-            .expect("Could not read Auth file")
+        let inthere = store.access(|db| db.contains_key(&key))
+            .expect("Could not read Auth file");
+        if (inthere) {
+            let store = store.access(|db| db.clone())
+                .expect("Could not read Board file");
+            let val = store.get(&key);
+            let mut validation = Validation {leeway: 5, validate_exp: true, ..Default::default()};
+            if !decode::<JWTClaims>(val.unwrap(), "secret".as_ref(), &validation).is_ok() {
+                Auth::unlock(key, val.unwrap().to_string());
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+        inthere
     }
 
     pub fn lock(key: AuthKey) -> Result<String, String> {
         if !Auth::is_locked(key) {
             let store = Auth::storage();
 
-            let claims = key.clone();
+            let start = SystemTime::now();
+            let since_the_epoch = start.duration_since(UNIX_EPOCH)
+                .expect("Time went backwards");
+
+            let in_ms = since_the_epoch.as_secs() * 1000 +
+                since_the_epoch.subsec_nanos() as u64 / 1_000_000;
+
+            let in_ms = in_ms / 1000;
+
+            let addtime = 2 * 60;
+
+            let in_ms = in_ms + addtime;
+
+            // let claims = key.clone();
+            let claims = JWTClaims {
+                key,
+                exp: in_ms
+            };
+
             let new_jwt = encode(&Header::default(), &claims, "secret".as_ref());
             if let Ok(new_jwt) = new_jwt {
 
@@ -98,6 +141,7 @@ impl Auth {
                 })
                 .expect("Failed to access file");
 
+                println!("{:?}", new_jwt.to_string());
                 Ok(new_jwt.to_string())
             }
             else {
