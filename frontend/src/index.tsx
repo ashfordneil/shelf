@@ -8,15 +8,19 @@ import { create } from "./util";
 import { Board } from "./board/Board";
 
 import * as board from "./board/services";
-import * as tile from "./tile/services";
+import * as tileServices from "./tile/services";
+
+interface Props {
+    url: string;
+}
 
 interface State {
     boards: string[];
     activeBoard: number | null;
 }
 
-class App extends React.Component<{}, State> {
-    constructor(props: {}) {
+class App extends React.Component<Props, State> {
+    constructor(props: Props) {
         super(props);
         this.state = {
             boards: [],
@@ -34,14 +38,38 @@ class App extends React.Component<{}, State> {
         }
         const boards = rawBoards && JSON.parse(rawBoards);
         if (boards) {
-            this.setState({ boards, activeBoard: 0 });
+            if (this.props.url) {
+                const index = boards.indexOf(this.props.url);
+                if (index === -1) {
+                    boards.push(this.props.url);
+                    this.setState({ boards, activeBoard: boards.length - 1 });
+                    localStorage.setItem("boards", JSON.stringify(boards));
+                } else {
+                    this.setState({ boards, activeBoard: index });
+                }
+            } else {
+                this.setState({ boards, activeBoard: 0 });
+            }
         } else {
-            await newBoard();
+            if (this.props.url) {
+                const boards = [this.props.url];
+                this.setState({ boards, activeBoard: 0 });
+                localStorage.setItem("boards", JSON.stringify(boards));
+            } else {
+                await this.newBoard();
+            }
         }
     }
 
     async newBoard() {
         const id = await board.post("My first board");
+        const tile = await tileServices.post({
+            title: "My first tile",
+            content: "This is an example tile. Click the + button to add a new tile."
+        });
+
+        await board.cheekyupdate(id, { title: "My first board", tiles: [tile] });
+
         const { boards } = this.state;
         this.setState({ boards: [...boards, id], activeBoard: boards.length });
         localStorage.setItem("boards", JSON.stringify([...boards, id]));
@@ -67,4 +95,13 @@ class App extends React.Component<{}, State> {
     }
 }
 
-ReactDOM.render(<App />, document.getElementById("main"));
+const parseUrl = (url: string) => {
+    const test = /.*\/share\/(.*)/.exec(url);
+    if (test) {
+        return test[1];
+    } else {
+        return null;
+    }
+}
+
+ReactDOM.render(<App url={parseUrl(window.location)}/>, document.getElementById("main"));

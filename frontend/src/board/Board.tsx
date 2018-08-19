@@ -209,10 +209,10 @@ export class Board extends React.Component<Props, State> {
                                 <div className="dropdown-content">
                                     <a href="#" onClick={() => this.props.newBoard()}>Add Board</a>
                                     {this.state.otherBoardNames.map(([id, name]) => {
-                                        console.log(this.state.otherBoardNames);
-                                        return <div className="dropdown-content" key={id} onClick={() => this.props.changeBoard(id)}>
-                                            <a href="#">{id}</a>
-                                        </div>
+                                        return <a
+                                            key={id}
+                                            href={`/share/${id}`}
+                                        >{name}</a>;
                                     })}
                                 </div>
                             </div>

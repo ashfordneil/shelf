@@ -23,6 +23,13 @@ impl_web! {
                 .map(|file| Response::builder().status(200).body(file).unwrap())
         }
 
+        #[get("/share/:_share")]
+        fn index2(&self, _share: String) -> impl Send + Future<Item = Response<File>, Error = ()> {
+            File::open(format!("{}/index.html", *ROOT_PATH))
+                .map_err(drop)
+                .map(|file| Response::builder().status(200).body(file).unwrap())
+        }
+
         #[get("/static/:file")]
         fn file(&self, file: String) -> impl Send + Future<Item = Response<File>, Error = ()> {
             File::open(format!("{}/{}", *ROOT_PATH, file))
