@@ -69,7 +69,7 @@ impl Board {
         }
     }
 
-    pub fn checkin(board_id: &Uuid, jwt: String, board: Board) -> Result<(), ()> {
+    pub fn checkin(board_id: &Uuid, jwt: String, board: Board) -> Result<(), String> {
         let key = AuthKey::Board(*board_id);
 
         if Auth::is_valid(key, jwt.clone()) {
@@ -85,7 +85,7 @@ impl Board {
             Auth::unlock(key, jwt.clone())
         }
         else {
-            Err(())
+            Err("Key is not valid".into())
         }
     }
 

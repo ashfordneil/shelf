@@ -66,7 +66,7 @@ impl Tile {
         }
     }
 
-    pub fn checkin(tile_id: &Uuid, jwt: String, tile: Tile) -> Result<(), ()> {
+    pub fn checkin(tile_id: &Uuid, jwt: String, tile: Tile) -> Result<(), String> {
         let key = AuthKey::Tile(*tile_id);
 
         if Auth::is_valid(key, jwt.clone()) {
@@ -81,7 +81,7 @@ impl Tile {
             Auth::unlock(key, jwt.clone())
         }
         else {
-            Err(())
+            Err("Key not valid".into())
         }
     }
 
@@ -104,7 +104,7 @@ impl Tile {
         retval.unwrap()
     }
 
-    pub fn delete(tile_id: &Uuid) -> Result<(), ()> {
+    pub fn delete(tile_id: &Uuid) -> Result<(), String> {
         if Tile::exists(tile_id) {
             let authkey = AuthKey::Tile(tile_id.clone());
             if let Ok(jwt) = Auth::lock(authkey) {
@@ -120,11 +120,11 @@ impl Tile {
                 Ok(())
             }
             else {
-                Err(())
+                Err("Could not lock".into())
             }
         }
         else {
-            Err(())
+            Err("Tile doesn't exist".into())
         }
     }
 }
