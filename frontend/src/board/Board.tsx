@@ -233,9 +233,11 @@ export class Board extends React.Component<Props, State> {
                                 }}
                             >
                                 <h2>
-                                    <span>
-                                        {tile.title}
-                                    </span>
+                                    <ContentEditable
+                                        html={tile.title}
+                                        disabled={true}
+                                        tagName="span"
+                                    />
                                     <div className="tileButton lock" data-active={tile.id in this.state.locks ? "on" : "off"}>
                                         <i className="fas fa-lock"></i>
                                     </div>
@@ -243,7 +245,11 @@ export class Board extends React.Component<Props, State> {
                                         <i className="fas fa-trash"></i>
                                     </div>
                                 </h2>
-                                <p>{tile.content}</p>
+                                <ContentEditable
+                                    html={tile.content}
+                                    disabled={true}
+                                    tagName="p"
+                                />
                             </div>)
                         }
                         {editing}
