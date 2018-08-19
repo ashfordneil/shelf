@@ -110,7 +110,11 @@ export class Board extends React.Component<Props, State> {
                 const footer =
                     <div className="footer">
                         <h2>SHELF</h2>
-                        <div className="addButton">
+                        <div className="addButton" onClick={() => {
+                            if (this.state.editingTile == null) {
+                                this.setState({editingTile: 0})
+                            }
+                        }}>
                             <h2><i className="fas fa-plus"></i></h2>
                         </div>
                     </div>;
