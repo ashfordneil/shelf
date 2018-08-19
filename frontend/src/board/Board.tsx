@@ -15,9 +15,6 @@ interface Props {
     id: string;
 }
 
-const handleDelete = (tile: Tile) => (): Promise<void> => {
-    return delete_(tile.id)
-}
 
 enum Step {
     Loading,
@@ -61,6 +58,10 @@ export class Board extends React.Component<Props, State> {
         });
     }
 
+    handleDelete(tileId: string) {
+        delete_(tileId).then(() => this.loadBoard());
+    }
+
     newTile() {
         console.log("CREATING TILE");
         console.log(`TITLE: ${this.state.title}`);
@@ -68,7 +69,15 @@ export class Board extends React.Component<Props, State> {
         tileServices.postForBoard({
             title: this.state.title,
             content: this.state.data,
-        }, this.props.id).then(() => this.loadBoard());
+        }, this.props.id)
+        .then(() => this.loadBoard())
+        .then(() => {
+            this.setState({
+                editingTile: null, 
+                title: 'title here', 
+                data: 'data here'
+            })
+        });
     }
 
     render() {
@@ -139,7 +148,7 @@ export class Board extends React.Component<Props, State> {
                                     <span>
                                         {tile.title}
                                     </span>
-                                    <div className="tileButton" onClick={handleDelete(tile)}>
+                                    <div className="tileButton" onClick={() => this.handleDelete(tile.id)}>
                                         <i className="fas fa-trash"></i>
                                     </div>
                                 </h2>
