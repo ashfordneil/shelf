@@ -21,10 +21,10 @@ ENV STATIC_FILES /static
 ENV STORAGE /store
 
 COPY --from=frontend /frontend/dist /static
-COPY --from=backend /backend/target/release/scaling-engine /
+COPY --from=backend /backend/target/release/shelf /
 
 EXPOSE 8080
 
-ENTRYPOINT /scaling-engine
+ENTRYPOINT /shelf
 
 ####################
