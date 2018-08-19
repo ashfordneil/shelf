@@ -15,7 +15,6 @@ interface Props {
     id: string;
 }
 
-
 enum Step {
     Loading,
     Done,
