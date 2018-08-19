@@ -48,6 +48,9 @@ interface State {
     data: string;
     interval: number | null;
 
+    boardLocked: string | null;
+    boardTitle: null | string;
+
     // tracking for lock icons on tiles that are being edited
     locks: {[key: string]: number};
 
@@ -67,6 +70,7 @@ export class Board extends React.Component<Props, State> {
             interval: null,
             locks: {},
             otherBoardNames: [],
+            boardLocked: null,
         }
     }
 
@@ -75,7 +79,9 @@ export class Board extends React.Component<Props, State> {
 
         var interval = setInterval(
             () => {
-                this.loadBoard();
+                if (this.state.boardLocked == null) {
+                    this.loadBoard();
+                }
             }
             , 1000);
         this.setState({ interval });
@@ -100,7 +106,7 @@ export class Board extends React.Component<Props, State> {
     loadBoard() {
         // this.setState({step: Step.Loading});
         boardServices.get(this.props.id).then(board => {
-            this.setState({step: Step.Done, board});
+            this.setState({step: Step.Done, board, boardTitle: board.title});
         }, err => {
             this.setState({step: Step.Error})
         });
@@ -211,7 +217,32 @@ export class Board extends React.Component<Props, State> {
                 const header =
                     <div className="topColour">
                         <div className="header">
-                            <h1>{board.title}</h1>
+                            <ContentEditable
+                                    html={this.state.boardTitle}
+                                    disabled={false}
+                                    onChange={async event => {
+                                        console.log("aaaa");
+                                        if (this.state.boardLocked == null) {
+                                            console.log("fff");
+                                            const jwt = await boardServices.checkout(this.props.id);
+                                            this.setState({boardLocked: jwt});
+                                        }
+                                        // let boardThing = JSON.parse(JSON.stringify(board));
+                                        // boardThing.title = event.target.value;
+                                        // this.setState({board: boardThing});
+                                        this.setState({boardTitle: event.target.value});
+                                    }}
+                                    onBlur={async event => {
+                                        console.log("bbbb");
+                                        let otherBoard = JSON.parse(JSON.stringify(board));
+                                        otherBoard.title = this.state.boardTitle;
+                                        otherBoard.tiles = otherBoard.tiles.map(o => o.id);
+                                        await boardServices.checkin(this.props.id, this.state.boardLocked, otherBoard);
+                                        this.setState({boardLocked: null});
+
+                                    }}
+                                    tagName="h1"
+                            />
                             <div className="dropdown">
                                 <button className="dropbtn">
                                     <i className="fas fa-caret-right"></i>
