@@ -1,6 +1,6 @@
 //! Module for doing crud operations on the board itself.
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::env;
 use mvdb::Mvdb;
 use std::path::Path;
 use uuid::Uuid;
@@ -22,22 +22,29 @@ pub struct JwtClaims {
     board_id: Uuid,
 }
 
+lazy_static! {
+    static ref ROOT_PATH: String = env::var("STORAGE").unwrap_or("./target".into());
+}
+
+
 impl Board {
     fn board_storage() -> Mvdb<HashMap<Uuid, Board>> {
 
-        let path = "./target/board.json";
+        lazy_static! {
+            static ref STORAGE: Mvdb<HashMap<Uuid, Board>> = {
+                let path = format!("{}/board.json", *ROOT_PATH);
+                let file = Path::new(&path);
 
-        let file = Path::new(path);
+                if !file.exists() {
+                    let mut f = File::create(&path).unwrap();
+                    f.write_all(b"{}").unwrap();
+                    f.sync_all().unwrap();
+                }
 
-        if !file.exists() {
-            let mut f = File::create(path).unwrap();
-            f.write_all(b"{}").unwrap();
-            f.sync_all().unwrap();
-            println!("Created: {:?}", path);
+                Mvdb::from_file(&file).expect("File does not exist, or schema mismatch")
+            };
         }
 
-        let STORAGE: Mvdb<HashMap<Uuid, Board>> = Mvdb::from_file(&file)
-            .expect("File does not exist, or schema mismatch");
         STORAGE.clone()
     }
 
@@ -51,9 +58,8 @@ impl Board {
 
     fn exists(board_id: &Uuid) -> bool {
         let store = Board::board_storage();
-        let store = store.access(|db| db.clone())
-            .expect("Could not read Board file");
-        store.get(board_id).cloned().is_some()
+        store.access(|db| db.contains_key(board_id))
+            .expect("Could not read Board file")
     }
 
     pub fn checkout(board_id: &Uuid) -> Option<String> {
