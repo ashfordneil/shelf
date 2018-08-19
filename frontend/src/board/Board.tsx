@@ -97,8 +97,16 @@ export class Board extends React.Component<Props, State> {
         });
     }
 
-    handleDelete(tileId: string) {
-        delete_(tileId).then(() => this.loadBoard());
+    async handleDelete(tileId: string) {
+        try {
+            await delete_(tileId);
+            this.setState(({ board }) => {
+                const tiles = board.tiles.filter(x => x.id !== tileId);
+                return { board: { ...board, tiles } };
+            });
+        } catch (error) {
+            this.lockTile(tileId);
+        }
     }
 
     newTile() {
@@ -126,10 +134,20 @@ export class Board extends React.Component<Props, State> {
         this.setState({editingTile: null});
     }
 
-    checkout(tile: Tile) {
-        tileServices.checkout(tile.id).then(jwt => {
-            this.setState({editingTile: jwt, title: tile.title, data: tile.content});
-        })
+    async checkout(tile: Tile) {
+        if (this.state.editingTile !== null) {
+            return;
+        }
+        try {
+            const jwt = await tileServices.checkout(tile.id);
+            this.setState({
+                editingTile: jwt,
+                title: tile.title,
+                data: tile.content
+            });
+        } catch(error) {
+            this.lockTile(tile.id);
+        }
     }
 
     submitChanges() {
@@ -234,14 +252,15 @@ export class Board extends React.Component<Props, State> {
                                 key={tile.id}
                                 className="tile"
                                 onClick={() => {
-                                    this.lockTile(tile.id)
                                     this.checkout(tile)
                                 }}
                             >
                                 <h2>
-                                    <span>
-                                        {tile.title}
-                                    </span>
+                                    <ContentEditable
+                                        html={tile.title}
+                                        disabled={true}
+                                        tagName="span"
+                                    />
                                     <div className="tileButton lock" data-active={tile.id in this.state.locks ? "on" : "off"}>
                                         <i className="fas fa-lock"></i>
                                     </div>
@@ -249,7 +268,11 @@ export class Board extends React.Component<Props, State> {
                                         <i className="fas fa-trash"></i>
                                     </div>
                                 </h2>
-                                <p>{tile.content}</p>
+                                <ContentEditable
+                                    html={tile.content}
+                                    disabled={true}
+                                    tagName="p"
+                                />
                             </div>)
                         }
                         {editing}
