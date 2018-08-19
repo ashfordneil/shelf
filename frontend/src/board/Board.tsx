@@ -43,6 +43,7 @@ export class Board extends React.Component<Props, State> {
             editingTile: null,
             title: "title here...",
             data: "data here...",
+            interval: null,
         }
     }
 
