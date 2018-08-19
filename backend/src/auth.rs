@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
-use std::sync::{Arc, Mutex};
 
 use uuid::Uuid;
 
@@ -67,9 +66,9 @@ impl Auth {
             println!("Created: {:?}", path);
         }
 
-        let STORAGE: Mvdb<HashMap<AuthKey,JwtString>> = Mvdb::from_file(&file)
+        let storage: Mvdb<HashMap<AuthKey,JwtString>> = Mvdb::from_file(&file)
             .expect("File does not exist, or schema mismatch");
-        STORAGE.clone()
+        storage.clone()
     }
 
     pub fn is_locked(key: AuthKey) -> bool {
@@ -108,11 +107,11 @@ impl Auth {
 
     pub fn is_valid(key: AuthKey, jwt: String) -> bool {
         let store = Auth::storage();
-         let mut store_from_disk = store.access(|db| db.clone())
+         let store_from_disk = store.access(|db| db.clone())
              .expect("Failed to access file");
         let stored_jwt = {
-            let store = store.access(|db| db.clone())
-        .expect("Failed to access file");
+            let _store = store.access(|db| db.clone())
+                .expect("Failed to access file");
             let entry = match store_from_disk.get(&key) {
                 Some(val) => Some(val.clone()),
                 None => None

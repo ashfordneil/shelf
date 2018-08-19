@@ -1,6 +1,5 @@
 //! Module for doing crud operations on the board itself.
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use mvdb::Mvdb;
 use std::path::Path;
 use uuid::Uuid;
@@ -36,9 +35,9 @@ impl Board {
             println!("Created: {:?}", path);
         }
 
-        let STORAGE: Mvdb<HashMap<Uuid, Board>> = Mvdb::from_file(&file)
+        let storage: Mvdb<HashMap<Uuid, Board>> = Mvdb::from_file(&file)
             .expect("File does not exist, or schema mismatch");
-        STORAGE.clone()
+        storage.clone()
     }
 
     /// Get the internals of a board

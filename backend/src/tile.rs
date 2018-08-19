@@ -1,6 +1,5 @@
 //! Module for doing crud operations on the Tile itself.
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use mvdb::Mvdb;
 use std::path::Path;
 use uuid::Uuid;
@@ -33,9 +32,9 @@ impl Tile {
             println!("Created: {:?}", path);
         }
 
-        let STORAGE: Mvdb<HashMap<Uuid, Tile>> = Mvdb::from_file(&file)
+        let storage: Mvdb<HashMap<Uuid, Tile>> = Mvdb::from_file(&file)
              .expect("File does not exist, or schema mismatch");
-         STORAGE.clone()
+         storage.clone()
     }
 
     /// Get the internals of a Tile
@@ -117,7 +116,7 @@ impl Tile {
                 })
                 .expect("Could not read tile file");
 
-                Auth::unlock(authkey, jwt.clone());
+                Auth::unlock(authkey, jwt.clone()).unwrap();
                 Ok(())
             }
             else {
