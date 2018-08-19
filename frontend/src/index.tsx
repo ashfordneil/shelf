@@ -36,17 +36,31 @@ class App extends React.Component<{}, State> {
         if (boards) {
             this.setState({ boards, activeBoard: 0 });
         } else {
-            const id = await board.post("My first board");
-            this.setState({ boards: [id], activeBoard: 0 });
-            localStorage.setItem("boards", JSON.stringify([id]));
+            await newBoard();
         }
     }
 
+    async newBoard() {
+        const id = await board.post("My first board");
+        const { boards } = this.state;
+        this.setState({ boards: [...boards, id], activeBoard: boards.length });
+        localStorage.setItem("boards", JSON.stringify([...boards, id]));
+    }
+
     render() {
-        console.log(this.state);
         const { boards, activeBoard } = this.state;
         if (boards && activeBoard !== null) {
-            return <Board id={boards[activeBoard]} />;
+            return <Board
+                        id={boards[activeBoard]}
+                        otherBoards={boards}
+                        newBoard={() => this.newBoard()}
+                        changeBoard={(id: string) => {
+                            const index = this.state.boards.indexOf(id);
+                            if (index >= 0) {
+                                this.setState({ activeBoard: index });
+                            }
+                        }}
+                />;
         } else {
             return <h2>Loading...</h2>;
         }

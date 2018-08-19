@@ -15,6 +15,9 @@ import jwtDecode from 'jwt-decode';
 
 interface Props {
     id: string;
+    otherBoards: string[];
+    newBoard: () => void;
+    changeBoard: (id: string) => void;
 }
 
 enum Step {
@@ -32,10 +35,13 @@ interface State {
     editingTile: null | string | 0;
     title: string;
     data: string;
-    interval: NodeJS.Timer | null;
+    interval: number | null;
 
     // tracking for lock icons on tiles that are being edited
     locks: {[key: string]: number};
+
+    // [[id, name], [id, name], ...]
+    otherBoardNames: [string, string][];
 }
 
 export class Board extends React.Component<Props, State> {
@@ -49,10 +55,11 @@ export class Board extends React.Component<Props, State> {
             data: "data here...",
             interval: null,
             locks: {},
+            otherBoardNames: [],
         }
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         this.loadBoard();
 
         var interval = setInterval(
@@ -61,6 +68,14 @@ export class Board extends React.Component<Props, State> {
             }
             , 1000);
         this.setState({ interval });
+
+        const boards = await Promise.all(
+            this.props.otherBoards.map(board => boardServices.get(board))
+        );
+        const withNames = this.props.otherBoards.map((id, index) =>
+            [id, boards[index].title] as [string, string]
+        );
+        this.setState({ otherBoardNames: withNames });
     }
 
     componentWillUnmount() {
@@ -189,12 +204,16 @@ export class Board extends React.Component<Props, State> {
                             <div className="dropdown">
                                 <button className="dropbtn">
                                     <i className="fas fa-caret-right"></i>
-                                    Options
+                                    My Boards
                                 </button>
                                 <div className="dropdown-content">
-                                    <a href="#">Add Board</a>
-                                    <a href="#">Delete Board</a>
-                                    <a href="#">Other boards</a>
+                                    <a href="#" onClick={() => this.props.newBoard()}>Add Board</a>
+                                    {this.state.otherBoardNames.map(([id, name]) => {
+                                        console.log(this.state.otherBoardNames);
+                                        return <div className="dropdown-content" key={id} onClick={() => this.props.changeBoard(id)}>
+                                            <a href="#">{id}</a>
+                                        </div>
+                                    })}
                                 </div>
                             </div>
                         </div>
