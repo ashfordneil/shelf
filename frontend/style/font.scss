@@ -65,6 +65,14 @@ a:hover {
     padding-left: 0.5em;
 }
 
+.tile span{
+  border-bottom: 1px solid rgba(255,255,255,0.5);
+}
+
+.tile:nth-child(4n+2) span{
+    border-bottom:1px solid rgba(0,0,0,0.3);
+}
+
 .tile p{
     color: #193E5C;
     font-size: 22px;
