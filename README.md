@@ -1,4 +1,4 @@
-Scaling Engine
+Shelf
 ==============
 
 A collaborative card based document editing tool.
