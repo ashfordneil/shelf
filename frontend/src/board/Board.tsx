@@ -117,6 +117,12 @@ export class Board extends React.Component<Props, State> {
     }
 
     stopEditing() {
+        const {editingTile} = this.state;
+        if (editingTile !== null && editingTile !== 0) {
+            let thingo = JSON.parse(jwtDecode(editingTile));
+            const id = thingo[1];
+            tileServices.undocheckout(id, editingTile);
+        }
         this.setState({editingTile: null});
     }
 

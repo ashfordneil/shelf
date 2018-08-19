@@ -39,6 +39,13 @@ export const checkin = async (id: string, jwt: string, body: Tile): Promise<void
     await axios.patch(`/tile/${id}`, body, config);
 }
 
+export const undocheckout = async (id: string, jwt: string): Promise<void> => {
+    const body = await get(id);
+    const config = JSON.parse(JSON.stringify(axiosConfig)) as typeof axiosConfig;
+    config.headers["auth"] = jwt;
+    await axios.patch(`/tile/${id}`, body, config);
+}
+
 export const delete_ = async (id: string): Promise<void> => {
     await axios.delete(`/tile/${id}`, axiosConfig);
 }

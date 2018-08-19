@@ -81,7 +81,10 @@ impl_web! {
 
         #[post("/tile")]
         #[content_type("json")]
-        fn post_tile(&self, body: Tile) -> Result<UuidWrapper, ()> {
+        fn post_tile(&self, body: Tile) -> Result<UuidWrapper, String> {
+            if body.title.contains("<script") || body.content.contains("<script") {
+                return Err("No XSS for you!".into());
+            }
             Ok(UuidWrapper(Tile::post(body)))
         }
 
