@@ -32,6 +32,9 @@ interface State {
     title: string;
     data: string;
     interval: NodeJS.Timer | null;
+
+    // tracking for lock icons on tiles that are being edited
+    locks: {[key: string]: number};
 }
 
 export class Board extends React.Component<Props, State> {
@@ -44,6 +47,7 @@ export class Board extends React.Component<Props, State> {
             title: "title here...",
             data: "data here...",
             interval: null,
+            locks: {},
         }
     }
 
@@ -75,6 +79,23 @@ export class Board extends React.Component<Props, State> {
         });
     }
 
+    async lockTile(tile: string) {
+        const timer = setTimeout(() => {
+            this.setState(({ locks }) => {
+                delete locks[tile];
+                return { locks };
+            });
+        }, 150);
+
+        this.setState(({ locks }) => {
+            if (tile in locks) {
+                clearTimeout(locks[tile]);
+            }
+            locks[tile] = timer;
+            return { locks };
+        });
+    }
+
     handleDelete(tileId: string) {
         delete_(tileId).then(() => this.loadBoard());
     }
@@ -90,8 +111,8 @@ export class Board extends React.Component<Props, State> {
         .then(() => this.loadBoard())
         .then(() => {
             this.setState({
-                editingTile: null, 
-                title: 'title here', 
+                editingTile: null,
+                title: 'title here',
                 data: 'data here'
             })
         });
@@ -106,7 +127,7 @@ export class Board extends React.Component<Props, State> {
                 return <h2>Loading</h2>
             }
             case Step.Done: {
-                const header = 
+                const header =
                     <div className="topColour">
                         <div className="header">
                             <h1>{board.title}</h1>
@@ -160,15 +181,22 @@ export class Board extends React.Component<Props, State> {
                                 tagName="p"
                             />
                         </div>;
-                
-                const boardR = 
+
+                const boardR =
                     <div className="board">
                         {board.tiles.map(tile =>
-                            <div key={tile.id} className="tile">
+                            <div
+                                key={tile.id}
+                                className="tile"
+                                onClick={() => this.lockTile(tile.id)}
+                            >
                                 <h2>
                                     <span>
                                         {tile.title}
                                     </span>
+                                    <div className="tileButton lock" data-active={tile.id in this.state.locks ? "on" : "off"}>
+                                        <i className="fas fa-lock"></i>
+                                    </div>
                                     <div className="tileButton" onClick={() => this.handleDelete(tile.id)}>
                                         <i className="fas fa-trash"></i>
                                     </div>
