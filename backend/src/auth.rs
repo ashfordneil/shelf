@@ -107,16 +107,11 @@ impl Auth {
 
     pub fn is_valid(key: AuthKey, jwt: String) -> bool {
         let store = Auth::storage();
-         let store_from_disk = store.access(|db| db.clone())
+        let store_from_disk = store.access(|db| db.clone())
              .expect("Failed to access file");
-        let stored_jwt = {
-            let _store = store.access(|db| db.clone())
-                .expect("Failed to access file");
-            let entry = match store_from_disk.get(&key) {
-                Some(val) => Some(val.clone()),
-                None => None
-            };
-            entry
+        let stored_jwt = match store_from_disk.get(&key) {
+            Some(val) => Some(val.clone()),
+            None => None
         };
         if let Some(stored_jwt) = stored_jwt {
             if jwt.eq(&stored_jwt) {
