@@ -104,4 +104,28 @@ impl Tile {
 
         retval.unwrap()
     }
+
+    pub fn delete(tile_id: &Uuid) -> Result<(), ()> {
+        if Tile::exists(tile_id) {
+            let authkey = AuthKey::Tile(tile_id.clone());
+            if let Ok(jwt) = Auth::lock(authkey) {
+                // TODO: Remove tile from boards
+
+                let store = Tile::tile_storage();
+                store.access_mut(|store| {
+                    store.remove(&tile_id.clone());
+                })
+                .expect("Could not read tile file");
+
+                Auth::unlock(authkey, jwt.clone());
+                Ok(())
+            }
+            else {
+                Err(())
+            }
+        }
+        else {
+            Err(())
+        }
+    }
 }
