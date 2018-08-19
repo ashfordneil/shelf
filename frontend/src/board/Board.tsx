@@ -65,6 +65,10 @@ export class Board extends React.Component<Props, State> {
         console.log("CREATING TILE");
         console.log(`TITLE: ${this.state.title}`);
         console.log(`DATA: ${this.state.data}`);
+        tileServices.postForBoard({
+            title: this.state.title,
+            content: this.state.data,
+        }, this.props.id).then(() => this.loadBoard());
     }
 
     render() {
@@ -106,7 +110,12 @@ export class Board extends React.Component<Props, State> {
                     ? null
                     : <div className="tile new">
                             <h2>
-                                <span contentEditable>New tile</span>
+                                <ContentEditable
+                                    html={this.state.title}
+                                    disabled={false}
+                                    onChange={event => this.setState({ title: event.target.value })}
+                                    tagName="span"
+                                />
                                 <div className="tileButton" onClick={() => this.setState({ editingTile: null })}>
                                     <i className="fas fa-times"></i>
                                 </div>

@@ -35,3 +35,8 @@ export const checkin = async (id: string, jwt: string, body: Board): Promise<voi
     config.headers["auth"] = jwt;
     await axios.patch(`/board/${id}`, body, config);
 }
+
+export const cheekyupdate = async (id: string, body: Board): Promise<void> => {
+    const jwt = await checkout(id);
+    await checkin(id, jwt, body);
+}
