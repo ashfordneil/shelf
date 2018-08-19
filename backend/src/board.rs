@@ -22,7 +22,7 @@ pub struct JwtClaims {
 }
 
 impl Board {
-    fn board_storage() -> Mvdb<HashMap<Uuid, Board>> {
+    pub fn board_storage() -> Mvdb<HashMap<Uuid, Board>> {
 
         let path = "./target/board.json";
 

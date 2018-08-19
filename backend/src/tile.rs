@@ -5,6 +5,8 @@ use std::path::Path;
 use uuid::Uuid;
 use auth::{Auth, AuthKey};
 
+use board::Board;
+
 use std::io::prelude::*;
 use std::fs::File;
 
@@ -109,6 +111,19 @@ impl Tile {
             let authkey = AuthKey::Tile(tile_id.clone());
             if let Ok(jwt) = Auth::lock(authkey) {
                 // TODO: Remove tile from boards
+
+                let boardstore = Board::board_storage();
+                let boardstore = boardstore.access(|db| db.clone())
+                    .expect("Could not read Board file");
+
+                for (bkey, bval) in boardstore {
+                    if bval.tiles.contains(tile_id) {
+                        let jwt = Board::checkout(&bkey).unwrap();
+                        let mut bval = bval.clone();
+                        bval.tiles.retain(|t| t != tile_id);
+                        let _res = Board::checkin(&bkey, jwt, bval);
+                    }
+                }
 
                 let store = Tile::tile_storage();
                 store.access_mut(|store| {

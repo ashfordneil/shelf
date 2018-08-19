@@ -41,7 +41,7 @@ impl<'de> Deserialize<'de> for AuthKey {
         let intermediate = serde_json::from_str(&string).map_err(D::Error::custom)?;
         let output = match intermediate {
             (true, x) => AuthKey::Board(x),
-            (false, x) => AuthKey::Board(x),
+            (false, x) => AuthKey::Tile(x),
         };
         Ok(output)
     }
