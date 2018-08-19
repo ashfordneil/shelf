@@ -94,11 +94,11 @@ impl_web! {
         }
 
         #[patch("/tile/:id")]
-        fn checkin_tile(&self, id: String, jwt: String, body: Tile) -> Result<String, ()> {
+        fn checkin_tile(&self, id: String, auth: String, body: Tile) -> Result<String, ()> {
             let id = Uuid::parse_str(&id).map_err(|e| {
                 println!("{:?}", e);
             })?;
-            let resp = Tile::checkin(&id, jwt, body);
+            let resp = Tile::checkin(&id, auth, body);
             if let Ok(_) = resp {
                 Ok("ok".to_string().to_string())
             }
