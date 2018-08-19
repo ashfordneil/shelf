@@ -23,12 +23,14 @@ pub enum AuthKey {
     Tile(Uuid),
 }
 
+type StoreThingo = (bool, Uuid);
+
 impl Serialize for AuthKey {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         use serde::ser::Error;
-        let intermediate = match self {
-            AuthKey::Board(x) => (true, x),
-            AuthKey::Tile(x) => (false, x),
+        let intermediate: StoreThingo = match self {
+            AuthKey::Board(x) => (true, *x),
+            AuthKey::Tile(x) => (false, *x),
         };
         let output = serde_json::to_string(&intermediate).map_err(S::Error::custom)?;
         output.serialize(serializer)
@@ -39,7 +41,7 @@ impl<'de> Deserialize<'de> for AuthKey {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         use serde::de::Error;
         let string = String::deserialize(deserializer)?;
-        let intermediate = serde_json::from_str(&string).map_err(D::Error::custom)?;
+        let intermediate: StoreThingo = serde_json::from_str(&string).map_err(D::Error::custom)?;
         let output = match intermediate {
             (true, x) => AuthKey::Board(x),
             (false, x) => AuthKey::Tile(x),
