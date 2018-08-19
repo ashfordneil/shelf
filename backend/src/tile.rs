@@ -18,11 +18,6 @@ pub struct Tile {
     pub content: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct JwtClaims {
-    tile_id: Uuid,
-}
-
 lazy_static! {
     static ref ROOT_PATH: String = env::var("STORAGE").unwrap_or("./target".into());
 }

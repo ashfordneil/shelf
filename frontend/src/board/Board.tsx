@@ -26,6 +26,17 @@ enum Step {
     Error,
 }
 
+interface JWTThing {
+    key: [boolean, string],
+    ttl: number
+}
+
+const readJWT = (input: string): JWTThing => {
+    const decoded = jwtDecode(input);
+    decoded.key = JSON.parse(decoded.key);
+    return decoded;
+}
+
 interface State {
     step: Step;
     board: boardModels.Board | null;
@@ -142,8 +153,8 @@ export class Board extends React.Component<Props, State> {
     stopEditing() {
         const {editingTile} = this.state;
         if (editingTile !== null && editingTile !== 0) {
-            let thingo = JSON.parse(jwtDecode(editingTile));
-            const id = thingo[1];
+            let thingo = readJWT((editingTile)) as JWTThing;
+            const id = thingo.key[1];
             tileServices.undocheckout(id, editingTile);
         }
         this.setState({editingTile: null});
@@ -171,8 +182,8 @@ export class Board extends React.Component<Props, State> {
             this.newTile();
         }
         else {
-            let thingo = JSON.parse(jwtDecode(editingTile));
-            const id = thingo[1];
+            let thingo = readJWT((editingTile));
+            const id = thingo.key[1];
             tileServices.checkin(id, editingTile, {
                 title: this.state.title,
                 content: this.state.data
@@ -263,8 +274,8 @@ export class Board extends React.Component<Props, State> {
                             if (this.state.editingTile == null || this.state.editingTile == 0) {
                                 return true;
                             }
-                            const decoded = JSON.parse(jwtDecode(this.state.editingTile));
-                            return decoded[1] != t.id
+                            const decoded = readJWT((this.state.editingTile));
+                            return decoded.key[1] != t.id
                         })
                         .map(tile =>
                             <div

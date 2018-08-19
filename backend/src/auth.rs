@@ -9,6 +9,8 @@ use uuid::Uuid;
 
 use jwt::{encode, Header};
 
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde_json;
 
@@ -21,6 +23,15 @@ pub struct Auth;
 pub enum AuthKey {
     Board(Uuid),
     Tile(Uuid),
+}
+
+
+type TTL = u64;
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
+struct JWTClaims {
+    key: AuthKey,
+    ttl: TTL,
 }
 
 type StoreThingo = (bool, Uuid);
@@ -56,10 +67,8 @@ lazy_static! {
     static ref ROOT_PATH: String = env::var("STORAGE").unwrap_or("./target".into());
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct JwtClaims {
-    key: AuthKey
-}
+
+
 impl Auth {
     fn storage() -> Mvdb<HashMap<AuthKey, JwtString>> {
         lazy_static! {
@@ -90,7 +99,19 @@ impl Auth {
         if !Auth::is_locked(key) {
             let store = Auth::storage();
 
-            let claims = key.clone();
+            let start = SystemTime::now();
+            let since_the_epoch = start.duration_since(UNIX_EPOCH)
+                .expect("Time went backwards");
+
+            let in_ms = since_the_epoch.as_secs() * 1000 +
+                since_the_epoch.subsec_nanos() as u64 / 1_000_000;
+
+            // let claims = key.clone();
+            let claims = JWTClaims {
+                key,
+                ttl: in_ms
+            };
+
             let new_jwt = encode(&Header::default(), &claims, "secret".as_ref());
             if let Ok(new_jwt) = new_jwt {
 
@@ -100,6 +121,7 @@ impl Auth {
                 })
                 .expect("Failed to access file");
 
+                println!("{:?}", new_jwt.to_string());
                 Ok(new_jwt.to_string())
             }
             else {
