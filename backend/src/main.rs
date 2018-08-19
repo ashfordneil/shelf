@@ -1,5 +1,7 @@
 extern crate http;
 extern crate mvdb;
+#[macro_use]
+extern crate lazy_static;
 extern crate tokio;
 #[macro_use]
 extern crate tower_web;
@@ -122,7 +124,7 @@ impl_web! {
 }
 
 pub fn main() {
-    let addr = "127.0.0.1:8080".parse().expect("Invalid address");
+    let addr = "0.0.0.0:8080".parse().expect("Invalid address");
     println!("Listening on http://{}", addr);
 
     ServiceBuilder::new()

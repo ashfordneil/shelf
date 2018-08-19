@@ -1,5 +1,6 @@
 //! Module for doing crud operations on the board itself.
 use std::collections::HashMap;
+use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
@@ -49,33 +50,38 @@ impl<'de> Deserialize<'de> for AuthKey {
 
 type JwtString = String;
 
+lazy_static! {
+    static ref ROOT_PATH: String = env::var("STORAGE").unwrap_or("./target".into());
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JwtClaims {
     key: AuthKey
 }
 impl Auth {
     fn storage() -> Mvdb<HashMap<AuthKey, JwtString>> {
-        let path = "./target/auth.json";
+        lazy_static! {
+            static ref STORAGE: Mvdb<HashMap<AuthKey, JwtString>> = {
+                let path = format!("{}/auth.json", *ROOT_PATH);
+                let file = Path::new(&path);
 
-        let file = Path::new(path);
+                if !file.exists() {
+                    let mut f = File::create(&path).unwrap();
+                    f.write_all(b"{}").unwrap();
+                    f.sync_all().unwrap();
+                }
 
-        if !file.exists() {
-            let mut f = File::create(path).unwrap();
-            f.write_all(b"{}").unwrap();
-            f.sync_all().unwrap();
-            println!("Created: {:?}", path);
+                Mvdb::from_file(&file).expect("File does not exist, or schema mismatch")
+            };
         }
 
-        let storage: Mvdb<HashMap<AuthKey,JwtString>> = Mvdb::from_file(&file)
-            .expect("File does not exist, or schema mismatch");
-        storage.clone()
+        STORAGE.clone()
     }
 
     pub fn is_locked(key: AuthKey) -> bool {
         let store = Auth::storage();
-        let store = store.access(|db| db.clone())
-            .expect("Could not read Auth file");
-        store.contains_key(&key)
+        store.access(|db| db.contains_key(&key))
+            .expect("Could not read Auth file")
     }
 
     pub fn lock(key: AuthKey) -> Result<String, String> {
@@ -107,12 +113,8 @@ impl Auth {
 
     pub fn is_valid(key: AuthKey, jwt: String) -> bool {
         let store = Auth::storage();
-        let store_from_disk = store.access(|db| db.clone())
+        let stored_jwt = store.access(|db| db.get(&key).cloned())
              .expect("Failed to access file");
-        let stored_jwt = match store_from_disk.get(&key) {
-            Some(val) => Some(val.clone()),
-            None => None
-        };
         if let Some(stored_jwt) = stored_jwt {
             if jwt.eq(&stored_jwt) {
                 return true;
