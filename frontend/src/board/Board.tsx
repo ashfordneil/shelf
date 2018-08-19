@@ -31,6 +31,7 @@ interface State {
     editingTile: null | string | 0;
     title: string;
     data: string;
+    interval: NodeJS.Timer | null;
 }
 
 export class Board extends React.Component<Props, State> {
@@ -39,7 +40,7 @@ export class Board extends React.Component<Props, State> {
         this.state = {
             step: Step.Loading,
             board: null,
-            editingTile: 0,
+            editingTile: null,
             title: "title here...",
             data: "data here...",
         }
@@ -47,10 +48,25 @@ export class Board extends React.Component<Props, State> {
 
     componentDidMount() {
         this.loadBoard();
+
+        var interval = setInterval(
+            () => {
+                this.loadBoard();
+            }
+            , 1000);
+        this.setState({ interval });
+    }
+
+    componentWillUnmount() {
+        const { interval } = this.state;
+        if (interval) {
+            clearInterval(interval);
+        }
+        this.setState({ interval: null })
     }
 
     loadBoard() {
-        this.setState({step: Step.Loading});
+        // this.setState({step: Step.Loading});
         boardServices.get(this.props.id).then(board => {
             this.setState({step: Step.Done, board});
         }, err => {
