@@ -57,6 +57,9 @@ impl_web! {
 
         #[patch("/board/:id")]
         fn checkin_board(&self, id: String, auth: String, body: Board) -> Result<String, ()> {
+            if body.title.contains("<script") {
+                return Err(());
+            }
             let id = Uuid::parse_str(&id).map_err(|e| {
                 println!("{:?}", e);
             })?;
