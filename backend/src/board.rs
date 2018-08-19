@@ -28,7 +28,7 @@ lazy_static! {
 
 
 impl Board {
-    fn board_storage() -> Mvdb<HashMap<Uuid, Board>> {
+    pub fn board_storage() -> Mvdb<HashMap<Uuid, Board>> {
 
         lazy_static! {
             static ref STORAGE: Mvdb<HashMap<Uuid, Board>> = {
@@ -76,7 +76,7 @@ impl Board {
         }
     }
 
-    pub fn checkin(board_id: &Uuid, jwt: String, board: Board) -> Result<(), ()> {
+    pub fn checkin(board_id: &Uuid, jwt: String, board: Board) -> Result<(), String> {
         let key = AuthKey::Board(*board_id);
 
         if Auth::is_valid(key, jwt.clone()) {
@@ -92,7 +92,7 @@ impl Board {
             Auth::unlock(key, jwt.clone())
         }
         else {
-            Err(())
+            Err("Key is not valid".into())
         }
     }
 

@@ -2,6 +2,10 @@
   background-color: #F1EFEF;
 }
 
+.fa-plus{
+  	color: #032B43;
+}
+
 .board {
   	.tile:nth-child(4n+1) > h2 {
         background-color: #D00000;
@@ -70,6 +74,11 @@
 
 .footer {
     background-color: #032B43;
+}
+
+.addButton{
+    cursor: pointer;
+    background-color: #FFBA08;
 }
 
 .addButton:hover {

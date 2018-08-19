@@ -7,6 +7,8 @@ use mvdb::Mvdb;
 use uuid::Uuid;
 use auth::{Auth, AuthKey};
 
+use board::Board;
+
 use std::io::prelude::*;
 use std::fs::File;
 
@@ -71,7 +73,7 @@ impl Tile {
         }
     }
 
-    pub fn checkin(tile_id: &Uuid, jwt: String, tile: Tile) -> Result<(), ()> {
+    pub fn checkin(tile_id: &Uuid, jwt: String, tile: Tile) -> Result<(), String> {
         let key = AuthKey::Tile(*tile_id);
 
         if Auth::is_valid(key, jwt.clone()) {
@@ -86,7 +88,7 @@ impl Tile {
             Auth::unlock(key, jwt.clone())
         }
         else {
-            Err(())
+            Err("Key not valid".into())
         }
     }
 
@@ -104,5 +106,42 @@ impl Tile {
             uuid.clone()
         })
         .expect("Could not access tile file")
+    }
+
+    pub fn delete(tile_id: &Uuid) -> Result<(), String> {
+        if Tile::exists(tile_id) {
+            let authkey = AuthKey::Tile(tile_id.clone());
+            if let Ok(jwt) = Auth::lock(authkey) {
+                // TODO: Remove tile from boards
+
+                let boardstore = Board::board_storage();
+                let boardstore = boardstore.access(|db| db.clone())
+                    .expect("Could not read Board file");
+
+                for (bkey, bval) in boardstore {
+                    if bval.tiles.contains(tile_id) {
+                        let jwt = Board::checkout(&bkey).unwrap();
+                        let mut bval = bval.clone();
+                        bval.tiles.retain(|t| t != tile_id);
+                        let _res = Board::checkin(&bkey, jwt, bval);
+                    }
+                }
+
+                let store = Tile::tile_storage();
+                store.access_mut(|store| {
+                    store.remove(&tile_id.clone());
+                })
+                .expect("Could not read tile file");
+
+                Auth::unlock(authkey, jwt.clone()).unwrap();
+                Ok(())
+            }
+            else {
+                Err("Could not lock".into())
+            }
+        }
+        else {
+            Err("Tile doesn't exist".into())
+        }
     }
 }

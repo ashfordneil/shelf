@@ -42,7 +42,7 @@ impl<'de> Deserialize<'de> for AuthKey {
         let intermediate = serde_json::from_str(&string).map_err(D::Error::custom)?;
         let output = match intermediate {
             (true, x) => AuthKey::Board(x),
-            (false, x) => AuthKey::Board(x),
+            (false, x) => AuthKey::Tile(x),
         };
         Ok(output)
     }
@@ -84,7 +84,7 @@ impl Auth {
             .expect("Could not read Auth file")
     }
 
-    pub fn lock(key: AuthKey) -> Result<String, ()> {
+    pub fn lock(key: AuthKey) -> Result<String, String> {
         if !Auth::is_locked(key) {
             let store = Auth::storage();
 
@@ -101,13 +101,13 @@ impl Auth {
                 Ok(new_jwt.to_string())
             }
             else {
-                Err(())
+                Err("JWT doesn't match".into())
             }
 
 
         }
         else {
-            Err(())
+            Err("Item is locked".into())
         }
     }
 
@@ -123,7 +123,7 @@ impl Auth {
         return false;
     }
 
-    pub fn unlock(key: AuthKey, jwt: String) -> Result<(), ()> {
+    pub fn unlock(key: AuthKey, jwt: String) -> Result<(), String> {
         if Auth::is_valid(key, jwt) {
             let store = Auth::storage();
             store.access_mut(|store| {
@@ -133,7 +133,7 @@ impl Auth {
             return Ok(());
         }
         else {
-            return Err(());
+            return Err("Key is not valid".into());
         }
     }
 

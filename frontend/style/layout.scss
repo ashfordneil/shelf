@@ -102,6 +102,7 @@ body {
     // width: 1em;
     padding: 0.2em;
     border-radius: 50%;
+    margin-right: 5em;
 }
 
 #main {
@@ -141,8 +142,32 @@ body {
     }
 }
 
+::-webkit-scrollbar{
+	width: 10px;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-track-piece{
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+	background-color: #f4f4f4;
+}
+
+::-webkit-scrollbar-thumb{
+	background-color: #CBCBCB;
+	outline: 2px solid #FFF;
+	outline-offset: -2px;
+	border: .1px solid #B7B7B7;
+}
+
+::-webkit-scrollbar-thumb:hover{
+	background-color: #909090;
+}
+
 .tile {
-    overflow: scroll;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overflow-y: initial;
     min-height: 18em;
     margin: 0.5em;
     border-radius: 4px;

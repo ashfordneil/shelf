@@ -106,6 +106,20 @@ impl_web! {
                 Err(())
             }
         }
+
+        #[delete("/tile/:id")]
+        fn delete_tile(&self, id: String) -> Result<String, ()> {
+            let id = Uuid::parse_str(&id).map_err(|e| {
+                println!("{:?}", e);
+            })?;
+            let resp = Tile::delete(&id);
+            if let Ok(_) = resp {
+                Ok("ok".to_string().to_string())
+            }
+            else {
+                Err(())
+            }
+        }
     }
 }
 
