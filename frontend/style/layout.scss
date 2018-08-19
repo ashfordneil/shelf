@@ -23,7 +23,6 @@ body {
 }
 
 .dropbtn:hover .fa-caret-right{
-  //
     -webkit-transform: rotate(90deg);
     -moz-transform: rotate(90deg);
     -o-transform: rotate(90deg);
@@ -207,7 +206,18 @@ body {
 
 .tileButton {
     text-align: center;
-    width: 1em;
+    width: 0.75em;
+    height: 0.75em;
     margin-left: 0.2em;
-    padding: 0.2em;
+    padding: 0.25em;
+}
+
+.fa-trash{
+  font-size: 0.75em;
+}
+.fa-times{
+  font-size: 0.75em;
+}
+.fa-save{
+  font-size: 0.75em;
 }

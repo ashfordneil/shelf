@@ -19,6 +19,7 @@
     }
 
     .tile:nth-child(4n+2) > h2 {
+        color: rgba(0,0,0,0.6);
         background-color: #FFBA08;
         border-top-left-radius: 4px;
         border-top-right-radius: 4px;
@@ -62,7 +63,6 @@
 }
 
 .tileButton {
-    box-shadow: 0 2px 10px 0 rgba(0,0,0,0.5);
     background-color: white;
     border-radius: 50%;
     color: #032B43;
@@ -94,5 +94,5 @@
 .addButton:hover {
     cursor: pointer;
     background-color: #e6b435;
-    box-shadow: 0 2px 10px 0 rgba(0,0,0,0.5);
+    box-shadow: 0 2px 10px 0 rgba(0,0,0,0.8);
 }
