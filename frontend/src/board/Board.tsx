@@ -11,6 +11,8 @@ import { create } from "../util";
 import { Tile } from "../tile/models";
 import { delete_ } from "../tile/services";
 
+import jwtDecode from 'jwt-decode';
+
 interface Props {
     id: string;
 }
@@ -100,9 +102,6 @@ export class Board extends React.Component<Props, State> {
     }
 
     newTile() {
-        console.log("CREATING TILE");
-        console.log(`TITLE: ${this.state.title}`);
-        console.log(`DATA: ${this.state.data}`);
         tileServices.postForBoard({
             title: this.state.title,
             content: this.state.data,
@@ -115,6 +114,39 @@ export class Board extends React.Component<Props, State> {
                 data: 'data here'
             })
         });
+    }
+
+    stopEditing() {
+        this.setState({editingTile: null});
+    }
+
+    checkout(tile: Tile) {
+        tileServices.checkout(tile.id).then(jwt => {
+            this.setState({editingTile: jwt, title: tile.title, data: tile.content});
+        })
+    }
+
+    submitChanges() {
+        const {editingTile} = this.state;
+        if (editingTile == 0) {
+            this.newTile();
+        }
+        else {
+            let thingo = JSON.parse(jwtDecode(editingTile));
+            const id = thingo[1];
+            tileServices.checkin(id, editingTile, {
+                title: this.state.title,
+                content: this.state.data
+            } as Tile)
+            .then(() => {
+                this.setState({
+                    editingTile: null, 
+                    title: 'title here', 
+                    data: 'data here'
+                });
+                this.loadBoard();
+            });
+        }
     }
 
     render() {
@@ -166,10 +198,10 @@ export class Board extends React.Component<Props, State> {
                                     onChange={event => this.setState({ title: event.target.value })}
                                     tagName="span"
                                 />
-                                <div className="tileButton" onClick={() => this.setState({ editingTile: null })}>
+                                <div className="tileButton" onClick={() => this.stopEditing()}>
                                     <i className="fas fa-times"></i>
                                 </div>
-                                <div className="tileButton" onClick={() => this.newTile()}>
+                                <div className="tileButton" onClick={() => this.submitChanges()}>
                                     <i className="fas fa-save"></i>
                                 </div>
                             </h2>
@@ -183,11 +215,22 @@ export class Board extends React.Component<Props, State> {
 
                 const boardR =
                     <div className="board">
-                        {board.tiles.map(tile =>
+                        {board.tiles
+                        .filter(t => {
+                            if (this.state.editingTile == null || this.state.editingTile == 0) {
+                                return true;
+                            }
+                            const decoded = JSON.parse(jwtDecode(this.state.editingTile));
+                            return decoded[1] != t.id
+                        })
+                        .map(tile =>
                             <div
                                 key={tile.id}
                                 className="tile"
-                                onClick={() => this.lockTile(tile.id)}
+                                onClick={() => {
+                                    this.lockTile(tile.id)
+                                    this.checkout(tile)
+                                }}
                             >
                                 <h2>
                                     <span>
