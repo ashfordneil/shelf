@@ -63,7 +63,7 @@ export class Board extends React.Component<Props, State> {
 
     newTile() {
         console.log("CREATING TILE");
-        console.log(`TITLE: ${this.state.tile}`);
+        console.log(`TITLE: ${this.state.title}`);
         console.log(`DATA: ${this.state.data}`);
     }
 
