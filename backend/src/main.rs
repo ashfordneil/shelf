@@ -1,5 +1,4 @@
 extern crate http;
-#[macro_use]
 extern crate mvdb;
 #[macro_use]
 extern crate lazy_static;
@@ -107,11 +106,25 @@ impl_web! {
                 Err(())
             }
         }
+
+        #[delete("/tile/:id")]
+        fn delete_tile(&self, id: String) -> Result<String, ()> {
+            let id = Uuid::parse_str(&id).map_err(|e| {
+                println!("{:?}", e);
+            })?;
+            let resp = Tile::delete(&id);
+            if let Ok(_) = resp {
+                Ok("ok".to_string().to_string())
+            }
+            else {
+                Err(())
+            }
+        }
     }
 }
 
 pub fn main() {
-    let addr = "127.0.0.1:8080".parse().expect("Invalid address");
+    let addr = "0.0.0.0:8080".parse().expect("Invalid address");
     println!("Listening on http://{}", addr);
 
     ServiceBuilder::new()

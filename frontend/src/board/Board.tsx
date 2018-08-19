@@ -15,10 +15,6 @@ interface Props {
     id: string;
 }
 
-const handleDelete = (tile: Tile) => (): Promise<void> => {
-    return delete_(tile.id)
-}
-
 enum Step {
     Loading,
     Done,
@@ -34,6 +30,10 @@ interface State {
     editingTile: null | string | 0;
     title: string;
     data: string;
+    interval: NodeJS.Timer | null;
+
+    // tracking for lock icons on tiles that are being edited
+    locks: {[key: string]: number};
 }
 
 export class Board extends React.Component<Props, State> {
@@ -42,18 +42,35 @@ export class Board extends React.Component<Props, State> {
         this.state = {
             step: Step.Loading,
             board: null,
-            editingTile: 0,
+            editingTile: null,
             title: "title here...",
             data: "data here...",
+            interval: null,
+            locks: {},
         }
     }
 
     componentDidMount() {
         this.loadBoard();
+
+        var interval = setInterval(
+            () => {
+                this.loadBoard();
+            }
+            , 1000);
+        this.setState({ interval });
+    }
+
+    componentWillUnmount() {
+        const { interval } = this.state;
+        if (interval) {
+            clearInterval(interval);
+        }
+        this.setState({ interval: null })
     }
 
     loadBoard() {
-        this.setState({step: Step.Loading});
+        // this.setState({step: Step.Loading});
         boardServices.get(this.props.id).then(board => {
             this.setState({step: Step.Done, board});
         }, err => {
@@ -61,10 +78,43 @@ export class Board extends React.Component<Props, State> {
         });
     }
 
+    async lockTile(tile: string) {
+        const timer = setTimeout(() => {
+            this.setState(({ locks }) => {
+                delete locks[tile];
+                return { locks };
+            });
+        }, 150);
+
+        this.setState(({ locks }) => {
+            if (tile in locks) {
+                clearTimeout(locks[tile]);
+            }
+            locks[tile] = timer;
+            return { locks };
+        });
+    }
+
+    handleDelete(tileId: string) {
+        delete_(tileId).then(() => this.loadBoard());
+    }
+
     newTile() {
         console.log("CREATING TILE");
-        console.log(`TITLE: ${this.state.tile}`);
+        console.log(`TITLE: ${this.state.title}`);
         console.log(`DATA: ${this.state.data}`);
+        tileServices.postForBoard({
+            title: this.state.title,
+            content: this.state.data,
+        }, this.props.id)
+        .then(() => this.loadBoard())
+        .then(() => {
+            this.setState({
+                editingTile: null,
+                title: 'title here',
+                data: 'data here'
+            })
+        });
     }
 
     render() {
@@ -76,7 +126,7 @@ export class Board extends React.Component<Props, State> {
                 return <h2>Loading</h2>
             }
             case Step.Done: {
-                const header = 
+                const header =
                     <div className="topColour">
                         <div className="header">
                             <h1>{board.title}</h1>
@@ -97,7 +147,11 @@ export class Board extends React.Component<Props, State> {
                 const footer =
                     <div className="footer">
                         <h2>SHELF</h2>
-                        <div className="addButton">
+                        <div className="addButton" onClick={() => {
+                            if (this.state.editingTile == null) {
+                                this.setState({editingTile: 0})
+                            }
+                        }}>
                             <h2><i className="fas fa-plus"></i></h2>
                         </div>
                     </div>;
@@ -106,7 +160,12 @@ export class Board extends React.Component<Props, State> {
                     ? null
                     : <div className="tile new">
                             <h2>
-                                <span contentEditable>New tile</span>
+                                <ContentEditable
+                                    html={this.state.title}
+                                    disabled={false}
+                                    onChange={event => this.setState({ title: event.target.value })}
+                                    tagName="span"
+                                />
                                 <div className="tileButton" onClick={() => this.setState({ editingTile: null })}>
                                     <i className="fas fa-times"></i>
                                 </div>
@@ -121,16 +180,23 @@ export class Board extends React.Component<Props, State> {
                                 tagName="p"
                             />
                         </div>;
-                
-                const boardR = 
+
+                const boardR =
                     <div className="board">
                         {board.tiles.map(tile =>
-                            <div key={tile.id} className="tile">
+                            <div
+                                key={tile.id}
+                                className="tile"
+                                onClick={() => this.lockTile(tile.id)}
+                            >
                                 <h2>
                                     <span>
                                         {tile.title}
                                     </span>
-                                    <div className="tileButton" onClick={handleDelete(tile)}>
+                                    <div className="tileButton lock" data-active={tile.id in this.state.locks ? "on" : "off"}>
+                                        <i className="fas fa-lock"></i>
+                                    </div>
+                                    <div className="tileButton" onClick={() => this.handleDelete(tile.id)}>
                                         <i className="fas fa-trash"></i>
                                     </div>
                                 </h2>

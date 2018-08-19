@@ -1,3 +1,6 @@
 /backend/target
 *.swp
 *~
+node_modules/
+dist/
+.cache/
